@@ -1,0 +1,21 @@
+@charset "utf-8";
+
+html,body {
+	margin: 0;
+	padding: 0;
+	line-height: 0;
+	text-align: center;
+}
+
+canvas{
+	background-image: url('./img/bluebg.jpg');
+	/*background-image: url('./img/bg.jpg');*/
+
+	background-size: cover;
+	background-position: center;
+
+	webkit-box-shadow: -4px 9px 40px 5px rgba(0,0,0,0.75);
+	-moz-box-shadow: -4px 9px 40px 5px rgba(0,0,0,0.75);
+	box-shadow: -4px 9px 40px 5px rgba(0,0,0,0.75);
+}
+
