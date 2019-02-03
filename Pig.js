@@ -49,7 +49,7 @@ class PigWithSprite {
             brickSprite.remove();
             return true;
         }
-        return false
+        return brickSprite.life <= 0;
     }
 
     overlapFood(foodSprite)
