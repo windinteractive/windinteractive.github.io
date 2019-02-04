@@ -183,7 +183,8 @@ class WindmillwithSprite
 
     getNextDraw(keyCode)
     {
-        var _rand = this.choices[this.seed];
+        // var _rand = this.choices[this.seed];
+        var _rand = random(this.choices);
         this.seed = (this.seed+1)%this.choices.length;
         const _index = this.choices.indexOf(_rand);
 
