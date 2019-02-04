@@ -169,7 +169,6 @@ function update()
         && !bricks.length
         && !coins.length
         && !smokes.length
-        && nightColor
         && happy2019In();
 
 

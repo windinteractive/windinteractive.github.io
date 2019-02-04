@@ -97,7 +97,7 @@ function happy2019In()
     TweenLite.to(window, 1, {h2019_x: 6, h2019_y: 20, ease: Back.easeOut.config(1.7)})
     TweenLite.to(pigSprite.sprite, 1, {scale: 1, delay: .5, ease: Back.easeOut.config(1.7)});
     TweenLite.to(pigSprite.sprite.position, 1, {y: pigSprite.y0, ease: Back.easeOut.config(1.7)});
-    TweenLite.to(windmill.sprite.position, 1, {x: windmill.dPosition.x, ease: Back.easeOut.config(1.7)});
+    TweenLite.to(windmill.sprite.position, 1, {x: windmill.dPosition.x, delay:.27,ease: Back.easeOut.config(1.7)});
     TweenLite.to(earchSprite.position, 1, {y: earchSprite.y0, });
 }
 function happy2019Out() {
@@ -161,7 +161,7 @@ function showCredit()
     TweenLite.to(credit, .7, {scale: credit.dScale, ease: Back.easeOut.config(1.7)});
     TweenLite.to(credit, .13, {scale: 0, delay: .7 + credit_duration,onComplete: happy2019In});
     window.gtag('event', 'view_result', {label: '87 Smokes'});
-    h2019_hidden = true;
+    // h2019_hidden = true;
 }
 
 

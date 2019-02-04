@@ -165,7 +165,7 @@ class WindmillwithSprite
 
         // blue, green, yellow, orange, red, pink
         this.colors=['#173f5f','#20639b', '#3caea3', '#f6d55c', '#ed553b', '#ff1050'];
-        this.choices = [0, 60, 120, 180, 240, 360];
+        this.choices = [0, 60, 120, 180, 240, 300];
         this.drawResultActions = [
             addSmoke,
             showCredit,
@@ -176,15 +176,17 @@ class WindmillwithSprite
         ];
 
         this.onComplete = this.onComplete.bind(this);
-
+        this.seed = this.choices.indexOf(random(this.choices));
 
         // this.onComplete();
     }
 
     getNextDraw(keyCode)
     {
-        var _rand = random(this.choices);
+        var _rand = this.choices[this.seed];
+        this.seed = (this.seed+1)%this.choices.length;
         const _index = this.choices.indexOf(_rand);
+
         this.afterAction = this.drawResultActions[_index];
 
         const keyNumber = int(keyCode) - 48;
@@ -194,7 +196,8 @@ class WindmillwithSprite
             _rand = this.choices[keyNumber];
             this.afterAction = this.drawResultActions[keyNumber];
         }
-        return _rand + (8*360+12) - (this.sprite.rotation%360);
+        this.sprite.rotation %= 360;
+        return _rand + (8*360+12) - this.sprite.rotation;
     }
 
 
