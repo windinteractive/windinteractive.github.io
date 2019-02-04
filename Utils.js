@@ -93,6 +93,7 @@ function happy2019In()
     h2019_hidden = false;
     windmill.doingRotate = false;
 
+    nightColor = 99;
     TweenLite.to(window, 1, {h2019_x: 6, h2019_y: 20, ease: Back.easeOut.config(1.7)})
     TweenLite.to(pigSprite.sprite, 1, {scale: 1, delay: .5, ease: Back.easeOut.config(1.7)});
     TweenLite.to(pigSprite.sprite.position, 1, {y: pigSprite.y0, ease: Back.easeOut.config(1.7)});
@@ -160,4 +161,29 @@ function showCredit()
     TweenLite.to(credit, .7, {scale: credit.dScale, ease: Back.easeOut.config(1.7)});
     TweenLite.to(credit, .13, {scale: 0, delay: .7 + credit_duration,onComplete: happy2019In});
     window.gtag('event', 'view_result', {label: '87 Smokes'});
+    h2019_hidden = true;
+}
+
+
+function shootFireworks()
+{
+    TweenLite.to(window, .37, {nightColor: 0});
+    TweenLite.to(window, 3, {h2019_x: -happy2019.width});
+    TweenLite.to(windmill.sprite.position, 3, {x: width+windmill.sprite.width});
+
+    var delay = .37;
+    for(var i=0; i<10; i++)
+    {
+        delay += random(100, 1300);
+        setTimeout((ind)=>
+        {
+            fPos[ind].set( 50 + ind*width*.27 + random(-10, 30), random(80, 250) );
+            fworksAnims[ind].rewind();
+            fworksAnims[ind].play();
+
+        }, delay, i % fPos.length)
+    }
+    setTimeout(happy2019In, delay + 1000);
+
+
 }

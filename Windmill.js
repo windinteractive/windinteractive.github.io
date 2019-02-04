@@ -169,7 +169,7 @@ class WindmillwithSprite
         this.drawResultActions = [
             addSmoke,
             showCredit,
-            addSmoke,
+            shootFireworks,
             addFallingBrick,
             addCoinsRain,
             addFoodRain,

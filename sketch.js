@@ -22,6 +22,8 @@ const laternImages = [];
 const laternXpos = [];
 var lanterns = [];
 
+var fworksAnims=[], fPos=[], nightColor=99;
+
 function preload()
 {
     // bg = loadImage('img/frame_001_delay-0.04s.jpg')
@@ -66,6 +68,12 @@ function preload()
     laternImages.push( loadImage('img/red2-lantern.png') )
     laternImages.push( loadImage('img/yellow1-lantern.png') )
     laternImages.push( loadImage('img/red1-lantern.png') )
+
+    fworksAnims = [
+        loadAnimation('./img/firework/f_001.png', './img/firework/f_010.png'),
+        loadAnimation('./img/firework/r_002.png', './img/firework/r_010.png'),
+        loadAnimation('./img/firework/b_002.png', './img/firework/b_010.png')
+    ];
 }
 
 function setup()
@@ -132,7 +140,14 @@ function setup()
         s.dPosition = s.position.copy();
         s.position.set(laternXpos[i], -img.height*.5);
         return s
-    })
+    });
+
+    fworksAnims.map(a => {a.goToFrame(a.getLastFrame()); a.looping = false;});
+    fPos = [
+        createVector(0,0),
+        createVector(0,0),
+        createVector(0,0),
+    ]
 
     noStroke();
 }
@@ -149,16 +164,13 @@ function update()
     coins = coins.filter( c => !pigSprite.overlapCoins(c) );
     smokes = smokes.filter( s => !pigSprite.overlapSmoke(s) );
 
-
-
     h2019_hidden
         && !foods.length
         && !bricks.length
         && !coins.length
         && !smokes.length
+        && nightColor
         && happy2019In();
-
-
 
 
 }
@@ -168,15 +180,18 @@ function draw()
     update();
     clear();
 
-
-    deClouds.draw();
-
-    drawSprites();
-
-
-    // image(happy2019, 6, 20, h2019_w, h2019_h);
-    image(happy2019, h2019_x, h2019_y, h2019_w, h2019_h);
-
+    if(nightColor<99)
+    {
+        background(nightColor);
+        fworksAnims.map( (a,i) => animation(a, fPos[i].x, fPos[i].y) );
+        drawSprites();
+        image(happy2019, h2019_x, h2019_y, h2019_w, h2019_h);
+    }
+    else{
+        deClouds.draw();
+        drawSprites();
+        image(happy2019, h2019_x, h2019_y, h2019_w, h2019_h);
+    }
 
     // pigSprite.drawDectionArea();
     // image(pig_img, 0, height - pig_h*2.3, pig_w, pig_h);
