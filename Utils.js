@@ -184,6 +184,6 @@ function shootFireworks()
         }, delay, i % fPos.length)
     }
     setTimeout(happy2019In, delay + 1000);
-
+    window.gtag('event', 'view_result', {label: 'Fireworks'});
 
 }
