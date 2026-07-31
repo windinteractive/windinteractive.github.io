@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="./manifest.json"
+  <meta charset="UTF-8">
+  <!-- 1. Crucial Viewport configuration with cover fit -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <title>iOS Fullscreen PWA Test</title>
+
+  <!-- 2. Mandatory iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- black-translucent overlays text on top of your app content instead of making a solid top block -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-startup-image" href="../icons/icon-maskable-512.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
+
+  <style>
+      :root { 
+        --vh: 100dvh;  /* see the JS below for why this is needed */
+      }
+
+    /* 3. Base document styling to stretch 100% of the display */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100dvh; 
+      background-color: #FFFFFF; 
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+      height: max(var(--vh, 100dvh), 100vh, 100dvh);
+    }
+
+    /* 4. Main App Container stretching to maximum physical screen size */
+    .app-container {
+      width: 100%;
+      height: 100%;
+      /* Debug request: limegreen app background */
+      background-color: #32CD32; 
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    /* 5. Safe Area Padding to protect your UI layout text from being cut off */
+    header {
+      background-color: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-weight: bold;
+      /* Adds dynamic padding to push text exactly below the iOS status bar/notch */
+      padding-top: calc(env(safe-area-inset-top, 20px) + 10px);
+      padding-bottom: 10px;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    footer {
+      background-color: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-weight: bold;
+      /* Adds dynamic padding to push text exactly above the iOS bottom swipe home indicator line */
+      padding-top: 10px;
+      padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 10px);
+    }
+
+    .debug-box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-top: 15px;
+      font-family: monospace;
+      font-size: 12px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <header>
+      TOP HEADER (Safe Area Active)
+    </header>
+
+    <main>
+      <h1>PWA Fullscreen Active</h1>
+      <p>If you see any white edges, the setup isn't running in standalone iOS mode yet.</p>
+      
+      <!-- Live Debugging Text Box -->
+      <div class="debug-box">
+        <strong>DEBUG LOGS:</strong><br>
+        • Mode: <span id="debug-mode">Checking...</span><br>
+        • Screen Height: <span id="debug-height">0px</span><br>
+        • Window InnerHeight: <span id="debug-inner">0px</span>
+      </div>
+    </main>
+
+    <footer>
+      BOTTOM FOOTER (Safe Area Active)
+    </footer>
+
+  </div>
+
+  <script>
+    // Practical debugging script to monitor your layout state on mobile
+    function runDebug() {
+      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      
+      document.getElementById('debug-mode').innerText = isStandalone ? "📱 Home Screen PWA" : "🌐 Safari Browser";
+      document.getElementById('debug-height').innerText = window.screen.height + "px";
+      document.getElementById('debug-inner').innerText = window.innerHeight + "px";
+      
+      document.documentElement.style.setProperty('--vh', window.screen.height + "px");
+    }
+
+    // Run debugging on load and on resize orientation updates
+    window.addEventListener('load', runDebug);
+    
+  </script>
+
+</body>
+</html>

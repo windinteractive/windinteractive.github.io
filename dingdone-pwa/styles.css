@@ -641,6 +641,8 @@ html, body {
   /* 3. Force hardware acceleration to stop paint-flicker */
   transform: translateZ(0);
   will-change: transform;
+  font-family: 'Courier New', Courier, monospace;
+
 }
 .voice--in .voice__len { text-align: left; color: #fff; }
 
