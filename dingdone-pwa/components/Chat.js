@@ -123,7 +123,9 @@ export function Chat({ active }) {
                   </span>
                 </button>
                 <div class="voice__len">
-                  ${playing === m.id ? toClock(elapsed) : toClock(m.seconds)}
+                  <span class="ticker-number">
+                    ${playing === m.id ? toClock(elapsed) : toClock(m.seconds)}
+                  </span>
                 </div>
               </div>`
             : m.side === 'in' ? html`
