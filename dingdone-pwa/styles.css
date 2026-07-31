@@ -627,6 +627,18 @@ html, body {
 .voice__len {
   color: #c9beb9; font-size: 11px;
   text-align: right;
+
+  /* 1. Force equal width for all numbers (Critical for Safari) */
+  font-variant-numeric: tabular-nums;
+  -webkit-font-feature-settings: "tnum";
+  
+  /* 2. Prevent Safari subpixel layout shifting and text-shaking */
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  
+  /* 3. Force hardware acceleration to stop paint-flicker */
+  transform: translateZ(0);
+  will-change: transform;
 }
 .voice--in .voice__len { text-align: left; color: #fff; }
 
