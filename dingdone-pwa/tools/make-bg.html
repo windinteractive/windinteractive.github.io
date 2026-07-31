@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>dingDONG background generator</title>
+<!--
+  Re-encodes the screen backgrounds in img/ as WebP.
+
+  These are precached for offline use, and PNG is very expensive here: the two
+  sources are 841 KB together and 73 KB as WebP. Safari has supported WebP since
+  iOS 14, and the same trade was already made for icons/logo.webp.
+
+  Encoded at native size (1207x2622, the design artboard), which is ~3x the
+  390pt phone the app targets.
+
+  Run:  ./tools/make-bg.sh
+-->
+<body><pre id="out">working…</pre>
+<script>
+const SOURCES = {
+  '/img/bg.png': 'icons/bg.webp',
+  '/img/get_start_bg.png': 'icons/get-start-bg.webp',
+};
+
+(async () => {
+  try {
+    const files = {};
+    for (const [src, out] of Object.entries(SOURCES)) {
+      const img = new Image();
+      await new Promise((ok, err) => { img.onload = ok; img.onerror = err; img.src = src; });
+
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+
+      // Synchronous toDataURL rather than convertToBlob: that promise does not
+      // settle reliably under --virtual-time-budget.
+      files[out] = c.toDataURL('image/webp', 0.9);
+    }
+    document.getElementById('out').textContent =
+      '@@ICONS@@' + JSON.stringify({ files }) + '@@ICONS@@';
+  } catch (e) {
+    document.getElementById('out').textContent = 'ERROR ' + e.message;
+  }
+})();
+</script>

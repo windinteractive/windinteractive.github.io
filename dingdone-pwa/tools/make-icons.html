@@ -1,0 +1,128 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>dingDONG icon generator</title>
+<!--
+  Regenerates everything in icons/ from the source artwork in svg/.
+
+  The source (svg/p003_div001_logo.svg) is a 2.2 MB Illustrator export: a 1253x1255
+  embedded PNG plus vector layers, and its "DONG" wordmark is clipped by the viewBox.
+  So we auto-crop to the topmost opaque row-band, which is the dD monogram alone.
+
+  Run:  ./tools/make-icons.sh
+-->
+<body><pre id="out">working…</pre>
+<script>
+const SRC = '/svg/p003_div001_logo.svg';
+const WORK = 2048;                 // internal raster size, downsampled per output
+const BG_BASE = '#0d0908';         // matches theme_color / body background
+const ACCENT = '#f15a24';
+
+// Rasterize the SVG at WORK px. The file carries only a viewBox and no intrinsic
+// width/height, so Chromium falls back to ~147px and upscales; inject a size first.
+async function rasterize() {
+  let txt = await (await fetch(SRC)).text();
+  txt = txt.replace('<svg ', `<svg width="${WORK}" height="${WORK}" preserveAspectRatio="xMidYMid meet" `);
+  const url = URL.createObjectURL(new Blob([txt], { type: 'image/svg+xml' }));
+  const img = new Image();
+  await new Promise((ok, err) => { img.onload = ok; img.onerror = err; img.src = url; });
+  const c = document.createElement('canvas');
+  c.width = c.height = WORK;
+  c.getContext('2d').drawImage(img, 0, 0, WORK, WORK);
+  URL.revokeObjectURL(url);
+  return c;
+}
+
+// Bounding box of the topmost opaque row-band, which isolates the monogram from
+// the clipped wordmark sitting below it.
+function monogramBox(canvas) {
+  const d = canvas.getContext('2d').getImageData(0, 0, WORK, WORK).data;
+  const opaque = (x, y) => d[(y * WORK + x) * 4 + 3] > 12;
+  const rowHas = y => { for (let x = 0; x < WORK; x++) if (opaque(x, y)) return true; return false; };
+
+  let top = 0;
+  while (top < WORK && !rowHas(top)) top++;
+  let bottom = top;
+  while (bottom + 1 < WORK && rowHas(bottom + 1)) bottom++;
+
+  let left = WORK, right = 0;
+  for (let y = top; y <= bottom; y++) {
+    for (let x = 0; x < left; x++) if (opaque(x, y)) { left = x; break; }
+    for (let x = WORK - 1; x > right; x--) if (opaque(x, y)) { right = x; break; }
+  }
+  return { x: left, y: top, w: right - left + 1, h: bottom - top + 1 };
+}
+
+// `cover` is the fraction of the icon's width the monogram spans. Maskable icons
+// need to sit inside the inner 80% safe zone, so they get a smaller value.
+function draw(src, box, size, cover) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const x = c.getContext('2d');
+
+  // Brand background: flat base plus the splash screen's bottom glow, muted so it
+  // still reads at 60px on a home screen.
+  x.fillStyle = BG_BASE;
+  x.fillRect(0, 0, size, size);
+  const g = x.createRadialGradient(size / 2, size * 1.05, 0, size / 2, size * 1.05, size * 0.95);
+  g.addColorStop(0, ACCENT);
+  g.addColorStop(0.30, '#a61b02');
+  g.addColorStop(0.55, '#4a0f05');
+  g.addColorStop(0.80, '#17100d');
+  g.addColorStop(1, BG_BASE);
+  x.globalAlpha = 0.55;
+  x.fillStyle = g;
+  x.fillRect(0, 0, size, size);
+  x.globalAlpha = 1;
+
+  const scale = (size * cover) / Math.max(box.w, box.h);
+  const w = box.w * scale, h = box.h * scale;
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(src, box.x, box.y, box.w, box.h, (size - w) / 2, (size - h) / 2, w, h);
+  return c;
+}
+
+// Transparent-background monogram for use inside the app UI.
+function drawBare(src, box, size) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const x = c.getContext('2d');
+  const scale = size / Math.max(box.w, box.h);
+  const w = box.w * scale, h = box.h * scale;
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(src, box.x, box.y, box.w, box.h, (size - w) / 2, (size - h) / 2, w, h);
+  return c;
+}
+
+(async () => {
+  try {
+    const src = await rasterize();
+    const box = monogramBox(src);
+
+    // The artwork is a textured 3D render, so it costs far more than flat vector
+    // would. Home-screen icons stay PNG because iOS requires it for
+    // apple-touch-icon; the in-app logo is WebP, which is ~10x smaller at the same
+    // quality and has been supported since iOS 14.
+    const specs = [
+      ['icons/apple-touch-icon-180.png', draw(src, box, 180, 0.72),     'image/png'],
+      ['icons/icon-192.png',             draw(src, box, 192, 0.72),     'image/png'],
+      ['icons/icon-512.png',             draw(src, box, 512, 0.72),     'image/png'],
+      ['icons/icon-maskable-512.png',    draw(src, box, 512, 0.52),     'image/png'],
+      ['icons/logo.webp',                drawBare(src, box, 540),       'image/webp'],
+    ];
+
+    // toDataURL is synchronous. convertToBlob's promise does not settle reliably
+    // under Chromium's --virtual-time-budget, which dumps the DOM before it
+    // resolves.
+    const out = {};
+    for (const [name, canvas, type] of specs) {
+      out[name] = canvas.toDataURL(type, 0.92);
+    }
+    // '@' is outside the base64 alphabet, so these sentinels cannot occur
+    // inside the payload itself.
+    document.getElementById('out').textContent =
+      '@@ICONS@@' + JSON.stringify({ box, files: out }) + '@@ICONS@@';
+  } catch (e) {
+    document.getElementById('out').textContent = 'ERROR ' + e.message;
+  }
+})();
+</script>

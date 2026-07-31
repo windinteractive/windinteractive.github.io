@@ -1,0 +1,53 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>dingDONG button generator</title>
+<!--
+  Flattens the .btn-primary artwork into icons/btn-bg.webp.
+
+  The source SVG is ~96 KB because its surface is an embedded raster texture
+  composited under blend modes. Only the label is really vector, and that gets
+  stripped so the live <button> text shows through instead, so rasterizing the
+  rest costs no fidelity.
+
+  svg/p002_div002_getstart.svg carries the same surface (0.08% mean channel
+  difference, texture noise only) and is not used.
+
+  Run:  ./tools/make-buttons.sh
+-->
+<body><pre id="out">working…</pre>
+<script>
+const SRC = '/svg/p003_div003_loginbtn.svg';
+const OUT = 'icons/btn-bg.webp';
+
+// The artwork's viewBox, which is ~3x the 326 CSS px the button spans on a
+// 390pt phone, so it stays sharp at @3x.
+const W = 1026, H = 175;
+
+(async () => {
+  try {
+    // The file carries only a viewBox and no intrinsic size, so Chromium would
+    // fall back to a ~150px default and upscale; inject the size first.
+    let txt = await (await fetch(SRC)).text();
+    txt = txt.replace('<svg ', `<svg width="${W}" height="${H}" `)
+             .replace(/<path class="cls-4"[^>]*\/>/g, '');   // drop the outlined label
+
+    const url = URL.createObjectURL(new Blob([txt], { type: 'image/svg+xml' }));
+    const img = new Image();
+    await new Promise((ok, err) => { img.onload = ok; img.onerror = err; img.src = url; });
+
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    c.getContext('2d').drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+
+    // Synchronous toDataURL rather than convertToBlob: that promise does not
+    // settle reliably under --virtual-time-budget.
+    const files = { [OUT]: c.toDataURL('image/webp', 0.9) };
+    document.getElementById('out').textContent =
+      '@@ICONS@@' + JSON.stringify({ files }) + '@@ICONS@@';
+  } catch (e) {
+    document.getElementById('out').textContent = 'ERROR ' + e.message;
+  }
+})();
+</script>

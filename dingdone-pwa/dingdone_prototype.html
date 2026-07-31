@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="{{ appName }}" />
+  <meta name="theme-color" content="#0d0908" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="manifest" href="./manifest.json" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #0d0908; font-family: 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; }
+    ::-webkit-scrollbar { display: none; }
+    @keyframes ddLoad { 0% { width: 10%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 10%; margin-left: 90%; } }
+  </style>
+</helmet>
+<div style="{{ outerWrapStyle }}">
+  <div style="{{ phoneStyle }}">
+    <div style="{{ screenAreaStyle }}">
+      <!-- SPLASH -->
+      <div style="{{ splashStyle }}">
+        <div style="text-align:center;">
+          <img src="assets/icons/logo.svg" alt="dingDONG" style="display:block;width:170px;margin:0 auto;" />
+          <div style="width:220px;height:6px;background:rgba(255,255,255,0.12);border-radius:6px;margin:26px auto 0;overflow:hidden;">
+            <div style="height:100%;width:40%;border-radius:6px;background:linear-gradient(90deg, {{ accentColor }}, #ffb066);animation:ddLoad 1.8s ease-in-out infinite;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ONBOARDING -->
+      <div style="{{ onboardingStyle }}">
+        <div style="{{ onboardArtStyle }}">
+          <img src="assets/icons/logo.svg" alt="dingDONG" style="display:block;width:270px;" />
+        </div>
+        <div style="padding:0 32px;">
+          <h1 style="font-size:38px;line-height:1.12;font-weight:800;margin:0 0 14px;background:linear-gradient(180deg,#fbe3c8, {{ accentColor }});-webkit-background-clip:text;background-clip:text;color:transparent;">Your Private<br />Group, Always<br />Connected</h1>
+          <p style="color:#e8d8cd;font-size:15px;line-height:1.5;margin:0 0 26px;">Chat, share updates, and stay in sync with your trusted circle. {{ appName }} keeps your private community close, simple, and secure.</p>
+          <button style="display:block;width:100%;padding:17px;text-align:center;border:none;border-radius:30px;cursor:pointer;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(120deg, #6d130f, {{ accentColor }});box-shadow:0 8px 20px rgba(240,134,42,0.25);" onClick="{{ goLogin }}">Get Started</button>
+        </div>
+      </div>
+
+      <!-- LOGIN -->
+      <div style="{{ loginStyle }}">
+        <img src="assets/icons/logo.svg" alt="dingDONG" style="display:block;width:130px;margin:{{ loginLogoMargin }} auto 0;" />
+        <div style="font-size:34px;font-weight:800;letter-spacing:0.5px;text-align:center;margin:14px 0 40px;"><span style="color:#fff;">ding</span><span style="color:{{ accentColor }};">{{ appNameSuffix }}</span></div>
+        <div style="flex:1;">
+          <div style="position:relative;margin:0 32px 18px;">
+            <img src="assets/icons/user.svg" alt="" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:20px;" />
+            <input type="text" placeholder="Username" style="width:100%;padding:16px 44px;background:#120c0b;border:1px solid rgba(255,255,255,0.15);border-radius:16px;color:#fff;font-size:15px;outline:none;" />
+          </div>
+          <div style="position:relative;margin:0 32px 18px;">
+            <img src="assets/icons/lock.svg" alt="" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:20px;" />
+            <input type="{{ pwInputType }}" placeholder="Password" style="width:100%;padding:16px 44px;background:#120c0b;border:1px solid rgba(255,255,255,0.15);border-radius:16px;color:#fff;font-size:15px;outline:none;" />
+            <img src="assets/icons/eye.svg" alt="Show password" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:22px;height:18px;cursor:pointer;" onClick="{{ togglePw }}" />
+          </div>
+        </div>
+        <div style="padding:0 32px 8px;">
+          <button style="display:block;width:100%;padding:17px;text-align:center;border:none;border-radius:30px;cursor:pointer;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(120deg, #6d130f, {{ accentColor }});box-shadow:0 8px 20px rgba(240,134,42,0.25);" onClick="{{ goHome }}">Log In</button>
+          <button style="background:none;border:none;color:#9a8f8a;font-size:14px;text-align:center;width:100%;margin-top:16px;cursor:pointer;" onClick="{{ goOnboarding }}">Don't have an account? <b style="color:{{ accentColor }};font-weight:700;">Sign Up</b></button>
+        </div>
+      </div>
+
+      <!-- HOME -->
+      <div style="{{ homeStyle }}">
+        <div style="{{ appHeaderStyle }}">
+          <img src="assets/icons/logo.svg" alt="dingDONG" style="display:block;width:34px;" />
+          <h2 style="color:#fff;font-size:19px;margin:0;font-weight:700;">Home</h2>
+          <img src="assets/icons/bell.svg" alt="Notifications" style="display:block;width:26px;height:28px;" />
+        </div>
+        <div style="display:flex;gap:10px;padding:0 20px 14px;">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;background:#151010;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 14px;color:#8a7d78;font-size:14px;"><img src="assets/icons/search.svg" alt="" style="width:16px;height:16px;" />Search programs, robots, or tasks...</div>
+          <div style="display:flex;align-items:center;gap:6px;padding:0 14px;border:1px solid rgba(240,134,42,0.35);border-radius:14px;color:{{ accentColor }};font-size:13px;font-weight:700;background:rgba(240,134,42,0.08);"><img src="assets/icons/plus.svg" alt="" style="width:16px;height:16px;" />NEW</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:0 20px 20px;">
+          <div style="background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:20px;padding:18px;margin-bottom:16px;">
+            <h3 style="margin:0 0 14px;color:#fff;font-size:16px;">Robot Operations</h3>
+            <p style="color:#cabfba;font-size:13px;margin:0;">Path_Following — operates autonomously along predefined waypoints using sensors.</p>
+          </div>
+          <div style="background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:20px;padding:18px;margin-bottom:16px;">
+            <h3 style="margin:0 0 14px;color:#fff;font-size:16px;">System Status <span style="color:#3ddc6b;font-size:12px;float:right;">All Nominal ✓</span></h3>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+              <div style="background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:14px;text-align:center;"><div style="width:48px;height:48px;border-radius:50%;margin:0 auto 8px;border:3px solid {{ accentColor }};border-right-color:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;"><img src="assets/icons/stat-cpu.svg" alt="" style="width:20px;height:20px;" /></div><div style="color:#c9beb9;font-size:12px;margin-bottom:2px;">CPU</div><div style="color:{{ accentColor }};font-size:12px;font-weight:700;">58%</div></div>
+              <div style="background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:14px;text-align:center;"><div style="width:48px;height:48px;border-radius:50%;margin:0 auto 8px;border:3px solid {{ accentColor }};border-right-color:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;"><img src="assets/icons/stat-memory.svg" alt="" style="width:20px;height:20px;" /></div><div style="color:#c9beb9;font-size:12px;margin-bottom:2px;">Memory</div><div style="color:{{ accentColor }};font-size:12px;font-weight:700;">62%</div></div>
+              <div style="background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:14px;text-align:center;"><div style="width:48px;height:48px;border-radius:50%;margin:0 auto 8px;border:3px solid {{ accentColor }};border-right-color:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;"><img src="assets/icons/stat-battery.svg" alt="" style="width:20px;height:20px;" /></div><div style="color:#c9beb9;font-size:12px;margin-bottom:2px;">Battery</div><div style="color:{{ accentColor }};font-size:12px;font-weight:700;">81%</div></div>
+              <div style="background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:14px;text-align:center;"><div style="width:48px;height:48px;border-radius:50%;margin:0 auto 8px;border:3px solid {{ accentColor }};border-right-color:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;"><img src="assets/icons/stat-network.svg" alt="" style="width:20px;height:20px;" /></div><div style="color:#c9beb9;font-size:12px;margin-bottom:2px;">Network</div><div style="color:{{ accentColor }};font-size:12px;font-weight:700;">73%</div></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div><div style="color:#fff;font-weight:700;font-size:14.5px;">Gait_Init</div><div style="color:#a89b95;font-size:12.5px;margin-top:2px;">Initialize walking parameters</div></div>
+            <div style="color:#e8e0dc;font-size:13px;">Manual</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div><div style="color:#fff;font-weight:700;font-size:14.5px;">Balance_Test</div><div style="color:#a89b95;font-size:12.5px;margin-top:2px;">Balance stability test</div></div>
+            <div style="color:#e8e0dc;font-size:13px;">Manual</div>
+          </div>
+        </div>
+        <div style="{{ bottomNavStyle }}">
+          <div style="{{ navActiveStyle }}" onClick="{{ goHome }}"><img src="assets/icons/nav-home.svg" alt="Home" style="width:22px;height:22px;" /></div>
+          <div style="{{ navBaseStyle }}"><img src="assets/icons/nav-edit.svg" alt="Tasks" style="width:22px;height:22px;opacity:.55;" /></div>
+          <div style="{{ navBaseStyle }}" onClick="{{ goContacts }}"><img src="assets/icons/nav-chat.svg" alt="Chats" style="width:22px;height:22px;opacity:.55;" /></div>
+          <div style="{{ navBaseStyle }}"><img src="assets/icons/nav-bell.svg" alt="Alerts" style="width:22px;height:22px;opacity:.55;" /></div>
+          <div style="{{ navBaseStyle }}"><img src="assets/icons/nav-user.svg" alt="Profile" style="width:22px;height:22px;opacity:.55;" /></div>
+        </div>
+      </div>
+
+      <!-- CONTACTS -->
+      <div style="{{ contactsStyle }}">
+        <div style="{{ appHeaderStyle }}">
+          <div style="width:24px;"></div>
+          <h2 style="color:#fff;font-size:19px;margin:0;font-weight:700;">Contact</h2>
+          <img src="assets/icons/bell.svg" alt="Notifications" style="display:block;width:26px;height:28px;" />
+        </div>
+        <div style="display:flex;gap:10px;padding:0 20px 14px;">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;background:#151010;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 14px;color:#8a7d78;font-size:14px;"><img src="assets/icons/search.svg" alt="" style="width:16px;height:16px;" />Search...</div>
+        </div>
+        <div style="display:flex;gap:16px;padding:0 20px 18px;overflow-x:auto;">
+          <sc-for list="{{ contactAvatars }}" as="c" hint-placeholder-count="5">
+            <div style="text-align:center;flex-shrink:0;width:56px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:#3a2c26;display:flex;align-items:center;justify-content:center;color:#e8dcd6;font-size:18px;font-weight:700;border:2px solid rgba(240,134,42,0.35);position:relative;">{{ c.initial }}<span style="position:absolute;bottom:0;right:2px;width:10px;height:10px;background:#3ddc6b;border-radius:50%;border:2px solid #000;"></span></div>
+              <div style="color:#cabfba;font-size:10.5px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:0 20px 20px;">
+          <sc-for list="{{ contactRows }}" as="row" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:14px;background:#1f1512;border:1px solid rgba(240,134,42,0.35);border-radius:16px;padding:14px;margin-bottom:12px;cursor:pointer;" onClick="{{ row.onRowClick }}">
+              <div style="{{ row.avStyle }}"><sc-if value="{{ row.isGroup }}" hint-placeholder-val="{{ false }}"><img src="assets/icons/logo.svg" alt="" style="width:26px;" /></sc-if>{{ row.avatar }}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="color:#fff;font-weight:700;font-size:14.5px;">{{ row.name }}</div>
+                <div style="color:#a89b95;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.msg }}</div>
+              </div>
+              <div style="color:#7d716c;font-size:11px;flex-shrink:0;">{{ row.time }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="{{ bottomNavStyle }}">
+          <div style="{{ navBaseStyle }}" onClick="{{ goHome }}"><img src="assets/icons/nav-home.svg" alt="Home" style="width:22px;height:22px;opacity:.55;" /></div>
+          <div style="{{ navBaseStyle }}"><img src="assets/icons/nav-edit.svg" alt="Tasks" style="width:22px;height:22px;opacity:.55;" /></div>
+          <div style="{{ navActiveStyle }}"><img src="assets/icons/nav-chat.svg" alt="Chats" style="width:22px;height:22px;" /></div>
+          <div style="{{ navBaseStyle }}"><img src="assets/icons/nav-bell.svg" alt="Alerts" style="width:22px;height:22px;opacity:.55;" /></div>
+          <div style="{{ navBaseStyle }}"><img src="assets/icons/nav-user.svg" alt="Profile" style="width:22px;height:22px;opacity:.55;" /></div>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div style="{{ chatStyle }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:{{ chatTopPadding }};color:#fff;">
+          <img src="assets/icons/back.svg" alt="Back" style="width:34px;height:34px;cursor:pointer;" onClick="{{ goContacts }}" />
+          <span style="font-weight:700;font-size:17px;">Group</span>
+          <img src="assets/icons/more.svg" alt="More" style="width:34px;height:34px;cursor:pointer;" />
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:6px 16px;" ref="{{ msgScrollRef }}">
+          <div style="display:flex;gap:10px;margin-bottom:16px;align-items:flex-end;">
+            <div style="width:34px;height:34px;border-radius:50%;background:#3a2c26;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#e8dcd6;font-size:12px;font-weight:700;">TM</div>
+            <div style="background:linear-gradient(120deg,#7a1512,{{ accentColor }});color:#fff;padding:12px 16px;border-radius:18px 18px 18px 4px;font-size:14px;line-height:1.4;max-width:230px;">我是demo我是demo我是demo我是demo我是demo我是demo我是demo</div>
+          </div>
+          <div style="color:#7d716c;font-size:10.5px;margin:4px 0 0 44px;">11:27 AM</div>
+          <div style="display:flex;align-items:center;gap:12px;margin:0 auto 4px 44px;background:#150f0d;border:1px solid rgba(240,134,42,0.35);border-radius:14px;padding:10px 14px;width:fit-content;"><img src="assets/icons/play.svg" alt="Play" style="width:26px;height:26px;flex-shrink:0;cursor:pointer;" /><img src="assets/icons/waveform.svg" alt="" style="width:150px;height:26px;" /><span style="color:#c9beb9;font-size:11px;">00:13</span></div>
+          <div style="display:flex;gap:10px;margin-bottom:16px;align-items:flex-end;">
+            <div style="width:34px;height:34px;border-radius:50%;background:#3a2c26;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#e8dcd6;font-size:12px;font-weight:700;">TM</div>
+            <div style="background:linear-gradient(120deg,#7a1512,{{ accentColor }});color:#fff;padding:12px 16px;border-radius:18px 18px 18px 4px;font-size:14px;line-height:1.4;max-width:230px;">我是demo我是demo我是demo我是demo我是demo我是demo我是demo</div>
+          </div>
+          <div style="color:#7d716c;font-size:10.5px;margin:4px 0 0 44px;">11:27 AM</div>
+          <div style="display:flex;align-items:center;gap:12px;margin:0 auto 4px 44px;background:#150f0d;border:1px solid rgba(240,134,42,0.35);border-radius:14px;padding:10px 14px;width:fit-content;"><img src="assets/icons/play.svg" alt="Play" style="width:26px;height:26px;flex-shrink:0;cursor:pointer;" /><img src="assets/icons/waveform-2.svg" alt="" style="width:150px;height:26px;" /><span style="color:#c9beb9;font-size:11px;">00:27</span></div>
+          <sc-for list="{{ demoMessages }}" as="m" hint-placeholder-count="0">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+              <div style="background:#2a1f1b;color:#fff;padding:12px 16px;border-radius:18px 18px 4px 18px;font-size:14px;line-height:1.4;max-width:230px;margin-left:auto;">{{ m.text }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="{{ composerStyle }}">
+          <img src="assets/icons/plus.svg" alt="Add" style="width:36px;height:36px;flex-shrink:0;cursor:pointer;" onClick="{{ addDemoMsg }}" />
+          <input type="text" placeholder="Message" value="{{ chatInput }}" onInput="{{ onChatInputChange }}" onKeyDown="{{ onChatKeyDown }}" style="flex:1;background:#120c0b;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:11px 16px;color:#fff;outline:none;font-size:14px;" />
+          <img src="assets/icons/mic.svg" alt="Voice" style="width:36px;height:36px;flex-shrink:0;" />
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 390, &quot;height&quot;: 844},
+  &quot;appName&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;dingDONG&quot;, &quot;tsType&quot;: &quot;string&quot;},
+  &quot;accentColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#f15a24&quot;, &quot;options&quot;: [&quot;#f15a24&quot;, &quot;#f7931e&quot;, &quot;#e8541f&quot;, &quot;#c33a17&quot;], &quot;tsType&quot;: &quot;string&quot;}
+}">
+const ACCENT_DEFAULT = '#f15a24';
+const CARD_BG = '#1f1512';
+const CARD_BORDER = 'rgba(240,134,42,0.35)';
+
+class Component extends DCLogic {
+  state = {
+    screen: 'splash',
+    pwVisible: false,
+    chatInput: '',
+    demoMessages: [],
+  };
+
+  componentDidMount() {
+    this._splashTimer = setTimeout(() => {
+      if (this.state.screen === 'splash') this.setState({ screen: 'onboarding' });
+    }, 1400);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._splashTimer);
+  }
+
+  go = (id) => this.setState({ screen: id });
+  goSplash = () => this.go('splash');
+  goOnboarding = () => this.go('onboarding');
+  goLogin = () => this.go('login');
+  goHome = () => this.go('home');
+  goContacts = () => this.go('contacts');
+  goChat = () => this.go('chat-screen');
+  togglePw = () => this.setState((s) => ({ pwVisible: !s.pwVisible }));
+  onChatInputChange = (e) => this.setState({ chatInput: e.target.value });
+  onChatKeyDown = (e) => { if (e.key === 'Enter') this.addDemoMsg(); };
+  addDemoMsg = () => {
+    const text = this.state.chatInput.trim();
+    if (!text) return;
+    this.setState((s) => ({ demoMessages: [...s.demoMessages, { text }], chatInput: '' }));
+    requestAnimationFrame(() => {
+      if (this._msgScroll) this._msgScroll.scrollTop = this._msgScroll.scrollHeight;
+    });
+  };
+
+  renderVals() {
+    const accentColor = this.props.accentColor || ACCENT_DEFAULT;
+    const appName = this.props.appName || 'dingDONG';
+    const screen = this.state.screen;
+
+    const outerWrapStyle = { position: 'fixed', inset: 0, background: '#0d0908', display: 'flex' };
+    const phoneStyle = { position: 'relative', width: '100%', height: '100%', background: '#000' };
+    const screenAreaStyle = { position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#050303' };
+
+    const topInset = 'env(safe-area-inset-top)';
+    const bottomInset = 'max(env(safe-area-inset-bottom), 16px)';
+
+    const baseScreen = (bg, extra) => ({
+      position: 'absolute', inset: 0,
+      opacity: screen === extra.id ? 1 : 0,
+      pointerEvents: screen === extra.id ? 'auto' : 'none',
+      transform: screen === extra.id ? 'translateX(0)' : 'translateX(24px)',
+      transition: 'opacity .35s ease, transform .35s ease',
+      display: 'flex', flexDirection: 'column',
+      background: bg,
+    });
+    const glow = `radial-gradient(110% 70% at 50% 108%, ${accentColor} 0%, #a61b02 26%, #4a0f05 48%, #17100d 70%, #0d0908 88%)`;
+    const flat = '#0d0908';
+
+    const splashStyle = { ...baseScreen(glow, { id: 'splash' }), alignItems: 'center', justifyContent: 'center' };
+    const onboardingStyle = { ...baseScreen(glow, { id: 'onboarding' }), justifyContent: 'flex-end', paddingBottom: '56px' };
+    const loginStyle = { ...baseScreen(glow, { id: 'login' }) };
+    const homeStyle = baseScreen(flat, { id: 'home' });
+    const contactsStyle = baseScreen(flat, { id: 'contacts' });
+    const chatStyle = baseScreen(flat, { id: 'chat-screen' });
+
+    const onboardArtStyle = { display: 'flex', justifyContent: 'center', marginTop: `calc(${topInset} + 42px)`, marginBottom: 'auto' };
+    const loginLogoMargin = `calc(${topInset} + 22px)`;
+
+    const appHeaderStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `calc(${topInset} + 8px) 20px 14px` };
+    const bottomNavStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-around', margin: `0 16px ${bottomInset}`, padding: '12px 10px', background: 'rgba(30,18,14,0.85)', backdropFilter: 'blur(6px)', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.06)' };
+    const navBaseStyle = { color: '#9a8f8a', fontSize: '18px', cursor: 'pointer', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' };
+    const navActiveStyle = { ...navBaseStyle, background: `linear-gradient(120deg,#7a1512,${accentColor})`, color: '#fff' };
+    const chatTopPadding = `calc(${topInset} + 8px) 16px 14px`;
+    const composerStyle = { display: 'flex', alignItems: 'center', gap: '10px', padding: `12px 16px ${bottomInset}`, borderTop: '1px solid rgba(255,255,255,0.06)' };
+
+    const contactAvatars = [
+      { initial: 'TM', name: '婁戴民' }, { initial: 'J', name: '溫志暉' }, { initial: '霍', name: '霍立德' },
+      { initial: '郭', name: '郭志能' }, { initial: '俞', name: '俞藝涵' },
+    ];
+    const avBase = { width: '46px', height: '46px', borderRadius: '50%', background: '#3a2c26', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e8dcd6', fontWeight: 700 };
+    const contactRows = [
+      { avatar: '', avStyle: { ...avBase, background: `linear-gradient(120deg,#6d130f,${accentColor})` }, name: 'Group', msg: 'Received a voice message', time: 'now', onRowClick: this.goChat, isGroup: true },
+      { avatar: 'TM', avStyle: avBase, name: '婁戴民 (TM)', msg: '好啊，咁就照呢個方法做', time: '2h ago', onRowClick: this.goChat },
+      { avatar: '霍', avStyle: avBase, name: '霍立德', msg: '收到，份文件我睇咗喇', time: '30+ days', onRowClick: this.goChat },
+      { avatar: 'J', avStyle: avBase, name: '溫志暉 (Jason)', msg: '得，遲啲再傾', time: '30+ days', onRowClick: this.goChat },
+    ];
+
+    return {
+      appName, appNameSuffix: appName.replace(/^ding/i, '').toUpperCase() || 'DONE',
+      accentColor,
+      outerWrapStyle, phoneStyle, screenAreaStyle,
+      splashStyle, onboardingStyle, loginStyle, homeStyle, contactsStyle, chatStyle,
+      onboardArtStyle, loginLogoMargin, appHeaderStyle, bottomNavStyle, navBaseStyle, navActiveStyle,
+      chatTopPadding, composerStyle,
+      pwInputType: this.state.pwVisible ? 'text' : 'password',
+      togglePw: this.togglePw, go: this.go,
+      goSplash: this.goSplash, goOnboarding: this.goOnboarding, goLogin: this.goLogin,
+      goHome: this.goHome, goContacts: this.goContacts, goChat: this.goChat,
+      contactAvatars, contactRows,
+      chatInput: this.state.chatInput, onChatInputChange: this.onChatInputChange, onChatKeyDown: this.onChatKeyDown,
+      addDemoMsg: this.addDemoMsg, demoMessages: this.state.demoMessages,
+      msgScrollRef: (el) => { this._msgScroll = el; },
+    };
+  }
+}
+
+</script>
+</body>
+</html>

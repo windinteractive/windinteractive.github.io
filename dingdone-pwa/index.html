@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <!-- viewport-fit=cover is what lets env(safe-area-inset-*) report real values,
+       and is required for the status bar to sit over the splash gradient. -->
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" /> -->
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=yes">   
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="dingDONG" />
+  <meta name="theme-color" content="#0d0908" />
+  <meta name="description" content="dingDONG — your private group, always connected." />
+
+  <title>dingDONG</title>
+
+  <!-- iOS ignores the manifest's icons for the home screen and uses this instead. -->
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <!-- Native launch screen, shown before any JS runs. iOS is unreliable with
+       WebP here, so this uses the PNG source icons/bg.webp was made from. -->
+  <link rel="apple-touch-startup-image" href="./img/bg.png" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module" src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      // The worker is cache-first with no revalidation, which makes local edits
+      // invisible until the cache is cleared by hand. Skip it while developing,
+      // and tear down any worker a previous visit left controlling this origin.
+      // Temporarily off everywhere: set DISABLED to false to bring it back.
+      const DISABLED = true;
+      const isLocal = ['localhost', '127.0.0.1', ''].includes(location.hostname);
+      addEventListener('load', () => {
+        if (DISABLED || isLocal) {
+          navigator.serviceWorker.getRegistrations()
+            .then(rs => rs.forEach(r => r.unregister()));
+          // Drop what it stored — but only once nothing controls the page. A
+          // worker that is still controlling this load would refill the cache
+          // from its own fetch handler, so that pass is left to the next load.
+          if (!navigator.serviceWorker.controller && window.caches) {
+            caches.keys().then(ks => ks.forEach(k => caches.delete(k)));
+          }
+          return;
+        }
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .catch(err => console.warn('SW registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

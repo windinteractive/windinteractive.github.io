@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  
+  <!-- viewport-fit=cover is what lets env(safe-area-inset-*) report real values,
+       and is required for the status bar to sit over the splash gradient. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="dingDONG" />
+  <meta name="theme-color" content="#0d0908" />
+  <meta name="description" content="dingDONG — your private group, always connected." />
+
+  <title>dingDONG</title>
+
+  <!-- iOS ignores the manifest's icons for the home screen and uses this instead. -->
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png" />
+  <!-- Native launch screen, shown before any JS runs. iOS is unreliable with
+       WebP here, so this uses the PNG source icons/bg.webp was made from. -->
+  <link rel="apple-touch-startup-image" href="../img/bg.png" />
+  <link rel="manifest" href="./manifest.json" />
+  
+<style>
+  /* Drop your home-screen screenshot here. */
+  :root { 
+    --home-shot: url('../img/home-screen.jpg'); 
+    --vh: 100dvh;  /* see the JS below for why this is needed */
+    height: max(var(--vh, 100dvh), 100vh, 100dvh);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;   /* long-press must not offer to save the image */
+    user-select: none;
+  }
+
+  /* The pretend home screen, filling the viewport behind everything. */
+  #home {
+    position: fixed;
+    inset: 0;
+    /* iOS sometimes computes 100dvh short on a cold standalone launch, only
+       correcting itself after a resize/rotation fires — the JS below sets
+       --vh from window.innerHeight to sidestep that. */
+    height: 100dvh;
+    height: var(--vh, 100dvh);
+    /* Stretched, not cropped: the screenshot comes from the same screen shape. */
+    background: #000 var(--home-shot) center / 100% 100% no-repeat;
+    cursor: pointer;
+  }
+
+  /* The app, on top. Same surface as the real splash. */
+  #app {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    height: var(--vh, 100dvh);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0d0908 url('../icons/bg.webp') center / cover no-repeat;
+    transform-origin: 50% 55%;
+  }
+  /* A crash is abrupt — the window is simply gone. */
+  #app.is-crashed {
+    opacity: 0;
+    transform: scale(0.94);
+    pointer-events: none;
+    transition: opacity .16s ease-in, transform .16s ease-in;
+  }
+
+  /* Launching from an icon: the window grows out of the point that was tapped.
+     JS sets transform-origin to the tap; this only runs on a relaunch, since a
+     cold page load has no icon to grow from. */
+  #app.is-launching { animation: launch .42s cubic-bezier(.2, .8, .25, 1) both; }
+
+  @keyframes launch {
+    from { opacity: 0; transform: scale(.12); }
+    40%  { opacity: 1; }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  #logo { display: block; width: 170px; }
+  #bar {
+    width: 220px;
+    height: 6px;
+    margin-top: 26px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  #bar i {
+    display: block;
+    height: 100%;
+    width: 40%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f15a24, #ffb066);
+    animation: load 1.8s ease-in-out infinite;
+  }
+  /* The beat where it stops responding, just before it dies. */
+  #app.is-frozen #bar i { animation-play-state: paused; }
+
+  @keyframes load {
+    0%   { width: 10%; margin-left: 0%; }
+    50%  { width: 60%; margin-left: 20%; }
+    100% { width: 10%; margin-left: 90%; }
+  }
+</style>
+</head>
+<body>
+  <div id="home" title="Tap to launch"></div>
+
+  <div id="app">
+    <img id="logo" src="../icons/logo.webp" alt="dingDONG" />
+    <div id="bar"><i></i></div>
+  </div>
+
+<script>
+  // window.innerHeight reflects the real screen even when 100dvh is computed
+  // short on a cold standalone launch — see the --vh comment on #home above.
+  function setVH() {
+    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    
+    // protrait
+    if  ( !isStandalone || window.innerHeight < window.innerWidth) 
+    {
+       document.documentElement.style.setProperty('--vh', window.innerHeight + "px");
+       return;
+    }
+    document.documentElement.style.setProperty('--vh', window.screen.height + "px");    
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+
+  var HANG_MS = 6000;     // how long it runs before dying
+  var FREEZE_MS = 500;    // how long it sits frozen first
+
+  // configuration.html overrides these. localStorage rather than OPFS because
+  // the values are needed synchronously, before the first launch() below.
+  try {
+    var savedHang = localStorage.getItem('crash-demo:hang');
+    var savedFreeze = localStorage.getItem('crash-demo:freeze');
+    if (savedHang !== null) HANG_MS = Number(savedHang);
+    if (savedFreeze !== null) FREEZE_MS = Number(savedFreeze);
+  } catch (e) { /* storage can be blocked; the defaults stand */ }
+
+  var app = document.getElementById('app');
+  var bar = document.querySelector('#bar i');
+  var timers = [];
+
+  function launch(event) {
+    timers.forEach(clearTimeout);
+    timers = [];
+    app.classList.remove('is-crashed', 'is-frozen');
+
+    if (event) {
+      // Grow from the tap. The origin stays put, so the crash later shrinks
+      // back toward the same icon.
+      app.style.transformOrigin = event.clientX + 'px ' + event.clientY + 'px';
+      app.classList.remove('is-launching');
+      void app.offsetWidth;              // restart the animation on a re-tap
+      app.classList.add('is-launching');
+    }
+
+    // Restart the bar from the top rather than resuming mid-cycle.
+    bar.style.animation = 'none';
+    void bar.offsetWidth;
+    bar.style.animation = '';
+    timers.push(setTimeout(function () { app.classList.add('is-frozen'); }, HANG_MS - FREEZE_MS));
+    timers.push(setTimeout(function () { app.classList.add('is-crashed'); }, HANG_MS));
+  }
+
+  // A finished animation with fill: both would otherwise outrank the crash
+  // transition and the window would never disappear.
+  app.addEventListener('animationend', function () { app.classList.remove('is-launching'); });
+
+  launch();
+  document.getElementById('home').addEventListener('click', launch);
+
+  // A screenshot saved from configuration.html wins over the bundled default.
+  // OPFS is origin-scoped, so this only applies when served — from file:// the
+  // bundled image is all there is.
+  async function useSavedShot() {
+    var root = await navigator.storage.getDirectory();
+    for await (var name of root.keys()) {
+      if (name.indexOf('home-screen.') === 0) {
+        var file = await (await root.getFileHandle(name)).getFile();
+        document.getElementById('home').style.backgroundImage =
+          'url(' + URL.createObjectURL(file) + ')';
+        return;
+      }
+    }
+  }
+
+  if (navigator.storage && navigator.storage.getDirectory) {
+    useSavedShot().catch(function () {});   // fall back to the bundled image
+  }
+
+  // Two fingers touching the top of the screen reaches configuration.html —
+  // see app.js for why a Home Screen app needs its own way in.
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2 && e.touches[0].clientY < 240 && e.touches[1].clientY < 240) {
+      location.href = './configuration.html';
+    }
+  });
+</script>
+</body>
+</html>

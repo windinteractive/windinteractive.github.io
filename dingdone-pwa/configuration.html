@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Configuration — Group Chat</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 20px 60px;
+    background: #0d0908;
+    color: #e8d8cd;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px;
+  }
+  h1 { font-size: 22px; margin: 0 0 20px; color: #fff; }
+  h2 { font-size: 17px; margin: 0 0 6px; color: #fff; }
+
+  section {
+    max-width: 640px;
+    background: #1f1512;
+    border: 1px solid rgba(240, 134, 42, 0.35);
+    border-radius: 18px;
+    padding: 18px;
+    margin: 0 auto 18px;
+  }
+  .hint { color: #a89b95; font-size: 13px; line-height: 1.5; margin: 0 0 16px; }
+  .hint a { color: #f15a24; }
+
+  .btn {
+    display: block;
+    padding: 11px 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(120deg, #f6891f, #f15d24);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .btn--ghost { background: none; border: 1px solid rgba(240, 134, 42, 0.35); color: #f15a24; }
+
+  .divider { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.09); margin: 20px 0 16px; }
+
+  .status { color: #8a7d78; font-size: 12.5px; margin: 16px 0 0; min-height: 1.2em; }
+
+  /* chat editor */
+  .field { display: flex; align-items: center; gap: 10px; color: #a89b95; font-size: 13px; }
+  .field input, .msg-row input, .msg-row select {
+    padding: 9px 10px;
+    background: #120c0b;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+  }
+  .field input { flex: 1; min-width: 0; }
+  /* Wraps rather than overflows: the whole row does not fit a phone's width. */
+  .msg-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    color: #a89b95;
+    font-size: 13px;
+  }
+  .msg-row .body { flex: 1; min-width: 120px; }
+  .msg-row .secs { width: 68px; flex: none; }
+  .msg-row .time { width: 92px; }
+  .msg-row .x {
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: none;
+    color: #f15a24;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .controls-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+</style>
+</head>
+<body>
+  <h1>Configuration</h1>
+
+  <section>
+    <h2>Group chat</h2>
+    <p class="hint">
+      The title and the conversation on
+      <a href="./index.html#/chat/group">#/chat/group</a>. Audio messages are
+      fake — the player just counts the duration out.
+    </p>
+
+    <label class="field">Title <input id="chatTitle" type="text" /></label>
+
+    <hr class="divider" />
+
+    <div id="messages"></div>
+
+    <div class="controls-row">
+      <button class="btn" id="addMsg">Add message</button>
+      <button class="btn btn--ghost" id="resetChat">Reset to defaults</button>
+      <a class="btn btn--ghost" href="./index.html#/chat/group">Open the chat</a>
+    </div>
+
+    <p class="status" id="chatStatus"></p>
+  </section>
+
+  <section>
+    <h2>Splash</h2>
+    <p class="hint">
+      How long the splash screen shows before it moves on to onboarding.
+    </p>
+
+    <label class="field">Duration <input id="splashDuration" type="number" min="0" step="0.1" /> s</label>
+
+    <p class="status" id="splashStatus"></p>
+  </section>
+
+<script>
+  var CHAT_KEY = 'chat:config';
+  var DEMO_TEXT = '我是demo我是demo我是demo我是demo我是demo我是demo我是demo';
+  var CHAT_DEFAULTS = {
+    title: 'Group',
+    messages: [
+      { id: 'a', side: 'in',  type: 'text',  text: DEMO_TEXT, time: '11:27 AM' },
+      { id: 'b', side: 'out', type: 'audio', seconds: 13, time: '' },
+      { id: 'c', side: 'in',  type: 'text',  text: DEMO_TEXT, time: '11:27 AM' },
+      { id: 'd', side: 'out', type: 'audio', seconds: 27, time: '' }
+    ]
+  };
+
+  var titleEl = document.getElementById('chatTitle');
+  var list = document.getElementById('messages');
+  var chatStatus = document.getElementById('chatStatus');
+
+  function loadChat() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(CHAT_KEY));
+      if (saved && saved.messages) return saved;
+    } catch (e) { /* corrupt entry — fall back to the defaults */ }
+    return JSON.parse(JSON.stringify(CHAT_DEFAULTS));
+  }
+
+  var chat = loadChat();
+
+  function saveChat() {
+    localStorage.setItem(CHAT_KEY, JSON.stringify(chat));
+    chatStatus.textContent = 'Saved. Reload the chat to see it.';
+  }
+
+  function options(pairs, selected) {
+    return pairs.map(function (p) {
+      return '<option value="' + p[0] + '"' + (p[0] === selected ? ' selected' : '') + '>' +
+        p[1] + '</option>';
+    }).join('');
+  }
+
+  var SIDES = [['in', 'Incoming'], ['out', 'Outgoing']];
+  var TYPES = [['text', 'Text'], ['audio', 'Audio']];
+
+  function messageRow(m) {
+    var el = document.createElement('div');
+    el.className = 'msg-row';
+    // Values are assigned below rather than interpolated, so message text
+    // cannot inject markup here.
+    el.innerHTML =
+      '<select class="side">' + options(SIDES, m.side) + '</select>' +
+      '<select class="type">' + options(TYPES, m.type) + '</select>' +
+      (m.type === 'audio'
+        ? '<input class="secs" type="number" min="1" max="600" step="1" /> s'
+        : '<input class="body" type="text" placeholder="Message" />') +
+      '<input class="time" type="text" placeholder="Time" />' +
+      '<button class="x" aria-label="Remove message">&times;</button>';
+
+    var field = el.querySelector(m.type === 'audio' ? '.secs' : '.body');
+    field.value = m.type === 'audio' ? m.seconds : (m.text || '');
+    el.querySelector('.time').value = m.time || '';
+
+    el.querySelector('.side').addEventListener('change', function (e) {
+      m.side = e.target.value;
+      saveChat();
+    });
+    el.querySelector('.type').addEventListener('change', function (e) {
+      m.type = e.target.value;
+      if (m.type === 'audio' && !m.seconds) m.seconds = 13;
+      saveChat();
+      renderMessages();          // the row's field changes with the type
+    });
+    el.querySelector('.time').addEventListener('input', function (e) {
+      m.time = e.target.value;
+      saveChat();
+    });
+    field.addEventListener('input', function (e) {
+      if (m.type === 'audio') m.seconds = Math.max(1, Number(e.target.value) || 1);
+      else m.text = e.target.value;
+      saveChat();
+    });
+    el.querySelector('.x').addEventListener('click', function () {
+      chat.messages = chat.messages.filter(function (x) { return x !== m; });
+      saveChat();
+      renderMessages();
+    });
+    return el;
+  }
+
+  function renderMessages() {
+    list.innerHTML = '';
+    chat.messages.forEach(function (m) { list.appendChild(messageRow(m)); });
+  }
+
+  titleEl.value = chat.title;
+  titleEl.addEventListener('input', function () {
+    chat.title = titleEl.value;
+    saveChat();
+  });
+
+  document.getElementById('addMsg').addEventListener('click', function () {
+    chat.messages.push({ id: 'm' + Date.now(), side: 'in', type: 'text', text: '', time: '' });
+    saveChat();
+    renderMessages();
+  });
+
+  document.getElementById('resetChat').addEventListener('click', function () {
+    localStorage.removeItem(CHAT_KEY);
+    chat = loadChat();
+    titleEl.value = chat.title;
+    renderMessages();
+    chatStatus.textContent = 'Reset to the built-in conversation.';
+  });
+
+  renderMessages();
+
+  var SPLASH_KEY = 'splash:duration';
+  var DEFAULT_SPLASH_MS = 1400;
+
+  var splashDurationEl = document.getElementById('splashDuration');
+  var splashStatus = document.getElementById('splashStatus');
+
+  function readSplashMs() {
+    var raw = localStorage.getItem(SPLASH_KEY);
+    var value = Number(raw);
+    return raw !== null && isFinite(value) && value >= 0 ? value : DEFAULT_SPLASH_MS;
+  }
+
+  splashDurationEl.value = readSplashMs() / 1000;
+  splashDurationEl.addEventListener('change', function () {
+    var seconds = Math.max(0, Number(splashDurationEl.value) || 0);
+    localStorage.setItem(SPLASH_KEY, String(Math.round(seconds * 1000)));
+    splashDurationEl.value = seconds;
+    splashStatus.textContent = 'Saved. Reload the splash screen to see it.';
+  });
+</script>
+</body>
+</html>
