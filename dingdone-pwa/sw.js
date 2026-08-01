@@ -1,5 +1,5 @@
 // Bump to invalidate the precache; the activate handler drops older versions.
-const CACHE = 'dingdong-v8';
+const CACHE = 'dingdong-v10';
 
 // The app shell. The 192/512 manifest icons are deliberately absent: the OS
 // fetches those at install time, and precaching them would add ~530 KB the
@@ -10,6 +10,7 @@ const SHELL = [
   './styles.css',
   './app.js',
   './router.js',
+  './opfs.js',
   './manifest.json',
   './vendor/preact-standalone.mjs',
   './components/Icon.js',
@@ -22,6 +23,11 @@ const SHELL = [
   './components/Home.js',
   './components/Contacts.js',
   './components/Chat.js',
+  './icons/waves/soundwave-01.svg',
+  './icons/waves/soundwave-02.svg',
+  './icons/waves/soundwave-03.svg',
+  './icons/waves/soundwave-04.svg',
+  './icons/waves/soundwave-05.svg',
   './icons/logo.webp',
   './icons/btn-bg.webp',
   './icons/bg.webp',
@@ -58,7 +64,7 @@ self.addEventListener('fetch', event => {
       if (hit) return hit;
       return fetch(request)
         .then(response => {
-          if (response.ok && response.type === 'basic') {
+          if (response.status === 200 && response.type === 'basic') {
             const copy = response.clone();
             caches.open(CACHE).then(cache => cache.put(request, copy));
           }

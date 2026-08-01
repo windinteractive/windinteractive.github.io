@@ -473,7 +473,7 @@ html, body {
   height: 12px;
   background: var(--ok);
   border-radius: 50%;
-  /* border: 2px solid #000; */
+  display: none;
 }
 .story__img,
 .avatar__img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
@@ -505,13 +505,13 @@ html, body {
 .contact-row__name { display: block; color: #fff; font-weight: 700; font-size: 14.5px; }
 .contact-row__msg {
   display: block;
-  color: var(--text-3);
+  color: var(--text);
   font-size: 12.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.contact-row__time { color: var(--text-5); font-size: 11px; flex-shrink: 0; }
+.contact-row__time { color: var(--text); font-size: 11px; flex-shrink: 0; }
 
 /* ---------- chat ---------- */
 
@@ -623,9 +623,19 @@ html, body {
   color: var(--accent);
 }
 .voice--in .voice__played { color: #fff; }
-.voice__played svg { flex-shrink: 0; }
+/* The drawing is an SVG file painted through a mask, so the same shape can be
+   tinted twice: idle underneath, accent for the part already played. */
+.voice__art {
+  display: block;
+  flex: 0 0 auto;
+  width: 180px;
+  height: 31px;
+  background: currentColor;
+  -webkit-mask: var(--wave) left center / 180px 31px no-repeat;
+  mask: var(--wave) left center / 180px 31px no-repeat;
+}
 .voice__len {
-  color: #c9beb9; font-size: 11px;
+  color: var(--text); font-size: 11px;
   text-align: right;
 
 }
@@ -641,10 +651,72 @@ html, body {
   /* 3. Force hardware acceleration to stop paint-flicker */
   transform: translateZ(0);
   will-change: transform;
-  /* font-family: 'Courier New', Courier, monospace; */
-
 }
 .voice--in .voice__len { text-align: left; color: #fff; }
+
+/* The poster alone sets the tile's size, so no padding or border pads it out.
+   The colours are the voice notes', for the poster that has yet to load. */
+.video-msg {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #150f0d;
+  cursor: pointer;
+  /* Keeps a poster that has not loaded from collapsing to nothing. */
+  min-width: 90px;
+  min-height: 60px;
+}
+.msg-in .video-msg {
+  border-radius: 18px 18px 18px 4px;
+  background: linear-gradient(120deg, #7a1512, var(--accent));
+}
+.msg-out .video-msg { margin-left: auto; }
+/* The poster is a plain rectangle, so it is rounded here to the tile's corners
+   rather than relying on the clip alone, which Safari does not always apply. */
+.video-msg__poster {
+  display: block;
+  max-width: 230px;
+  height: auto;
+  border-radius: inherit;
+}
+/* The length is the message's, drawn where the artwork used to carry it. */
+.video-msg__len {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  color: #fff;
+  font-size: 11px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+/* Full screen from the page's side, so playback still fills the phone on the
+   browsers that refuse the fullscreen API. */
+.video-full {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.video-full__el { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.video-full__close {
+  position: absolute;
+  top: calc(var(--safe-top) + 8px);
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
 
 .composer {
   display: flex;

@@ -50,28 +50,7 @@ const SOLID = {
   more: () => html`<circle cx="5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="19" cy="12" r="1.7" />`,
 };
 
-// Deterministic bar heights, so the two voice notes look distinct but stable.
-const WAVE = {
-  waveform: [9, 21, 6, 17, 24, 11, 8, 19, 14, 26, 5, 15, 22, 9, 18, 7, 25, 12, 16, 6, 20, 10, 23, 8, 14, 17, 21, 7, 13, 25, 9, 18, 6, 16, 23, 11, 19, 8, 15, 24, 10, 20, 5, 17, 26, 12, 7, 22, 14, 9, 19, 6].splice(9),
-  'waveform-2': [18, 6, 24, 11, 9, 20, 15, 26, 7, 13, 22, 9, 17, 5, 19, 24, 8, 14, 10, 21, 6, 16, 25, 11, 8, 19, 12, 23, 7, 17, 9, 20, 6, 15, 25, 10, 18, 5, 21, 8, 14, 26, 11, 19, 7, 16, 24, 9, 13, 22, 6, 17].splice(12),
-};
-
 export function Icon({ name, size = 24, className }) {
-  const bars = WAVE[name];  // only the first 50 bars fit in the 180px width
-  if (bars) {
-    const w_v = 180;
-    const gap = w_v / bars.length;
-    const h_v = 39;
-    return html`
-      <svg class=${className} width="${w_v}" height="${h_v}" viewBox="0 0 ${w_v} ${h_v}"
-           fill="currentColor" aria-hidden="true">
-        ${bars.map((h, i) => html`
-          <rect key=${i} x=${(i * gap).toFixed(2)} y=${((h_v - h) / 2).toFixed(2)}
-                width=${(gap * 0.42).toFixed(2)} height=${h} rx=${(gap * 0.175).toFixed(2)} />
-        `)}
-      </svg>`;
-  }
-
   if (SOLID[name]) {
     return html`
       <svg class=${className} width=${size} height=${size} viewBox="0 0 24 24"

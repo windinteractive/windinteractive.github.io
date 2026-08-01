@@ -73,6 +73,25 @@
   }
   .msg-row .body { flex: 1; min-width: 120px; }
   .msg-row .secs { width: 68px; flex: none; }
+  .msg-row .wave { flex: 1; min-width: 120px; }
+  /* The file inputs are hidden behind their label, which doubles as the button
+     and shows what is currently stored. */
+  .msg-row .pick {
+    flex: 1;
+    min-width: 130px;
+    padding: 9px 10px;
+    background: #120c0b;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #a89b95;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+  .msg-row .pick input { display: none; }
+  .msg-row .pick b { color: #fff; font-weight: 400; }
   .msg-row .time { width: 92px; }
   .msg-row .x {
     margin-left: auto;
@@ -98,7 +117,10 @@
     <p class="hint">
       The title and the conversation on
       <a href="./index.html#/chat/group">#/chat/group</a>. Audio messages are
-      fake — the player just counts the duration out.
+      fake — the player just counts the duration out — and pick their drawing
+      from <code>icons/waves/</code>, "Auto" cycling through the five. A video
+      message plays full screen; its file and poster are copied into this
+      browser's private storage, and removed again with the message.
     </p>
 
     <label class="field">Title <input id="chatTitle" type="text" /></label>
@@ -127,16 +149,27 @@
     <p class="status" id="splashStatus"></p>
   </section>
 
-<script>
+<script type="module">
+  import { OPFS, isOpfs, opfsName, saveFile, removeFile } from './opfs.js';
+
   var CHAT_KEY = 'chat:config';
-  var DEMO_TEXT = '我是demo我是demo我是demo我是demo我是demo我是demo我是demo';
+  var VIDEO_SRC = './img/chat.mov';
+  var VIDEO_POSTER = './img/chat.png';
+  // Kept in step with DEFAULTS in components/Chat.js.
   var CHAT_DEFAULTS = {
-    title: 'Group',
+    title: '婁戴民 TM',
     messages: [
-      { id: 'a', side: 'in',  type: 'text',  text: DEMO_TEXT, time: '11:27 AM' },
-      { id: 'b', side: 'out', type: 'audio', seconds: 13, time: '' },
-      { id: 'c', side: 'in',  type: 'text',  text: DEMO_TEXT, time: '11:27 AM' },
-      { id: 'd', side: 'out', type: 'audio', seconds: 27, time: '' }
+      { id: 'v1',  side: 'in',  type: 'audio', seconds: 13, time: '11:27 AM' },
+      { id: 'v2',  side: 'out', type: 'audio', seconds: 27, time: '11:27 AM' },
+      { id: 'v3',  side: 'in',  type: 'audio', seconds: 8,  time: '11:28 AM' },
+      { id: 'v4',  side: 'out', type: 'audio', seconds: 19, time: '11:28 AM' },
+      { id: 'v5',  side: 'in',  type: 'audio', seconds: 34, time: '11:29 AM' },
+      { id: 'v6',  side: 'out', type: 'audio', seconds: 11, time: '11:30 AM' },
+      { id: 'v7',  side: 'in',  type: 'audio', seconds: 22, time: '11:31 AM' },
+      { id: 'v8',  side: 'out', type: 'audio', seconds: 6,  time: '11:31 AM' },
+      { id: 'v9',  side: 'in',  type: 'audio', seconds: 41, time: '11:32 AM' },
+      { id: 'v10', side: 'out', type: 'audio', seconds: 16, time: '11:33 AM' },
+      { id: 'v11', side: 'out', type: 'video', src: VIDEO_SRC, poster: VIDEO_POSTER, seconds: 8, time: '11:34 AM' }
     ]
   };
 
@@ -167,7 +200,47 @@
   }
 
   var SIDES = [['in', 'Incoming'], ['out', 'Outgoing']];
-  var TYPES = [['text', 'Text'], ['audio', 'Audio']];
+  var TYPES = [['text', 'Text'], ['audio', 'Audio'], ['video', 'Video']];
+  var WAVES = [
+    ['', 'Wave: auto'],
+    ['soundwave-01', 'Wave 1'],
+    ['soundwave-02', 'Wave 2'],
+    ['soundwave-03', 'Wave 3'],
+    ['soundwave-04', 'Wave 4'],
+    ['soundwave-05', 'Wave 5']
+  ];
+
+  function typeFields(m) {
+    if (m.type === 'audio') {
+      return '<input class="secs" type="number" min="1" max="600" step="1" /> s' +
+        '<select class="wave">' + options(WAVES, m.wave || '') + '</select>';
+    }
+    if (m.type === 'video') {
+      return '<input class="secs" type="number" min="1" max="600" step="1" /> s' +
+        picker('src', 'Video', 'video/*') + picker('poster', 'Poster', 'image/*');
+    }
+    return '<input class="body" type="text" placeholder="Message" />';
+  }
+
+  // The stored name is filled in below rather than interpolated, so a file name
+  // cannot inject markup here.
+  function picker(field, label, accept) {
+    return '<label class="pick">' + label + ': <b class="name"></b>' +
+      '<input class="' + field + '" type="file" accept="' + accept + '" /></label>';
+  }
+
+  // 'opfs:v11-src.mov' reads as 'v11-src.mov'; a path shows its last segment.
+  function shortName(value) {
+    if (!value) return 'choose…';
+    return isOpfs(value) ? opfsName(value) : value.split('/').pop();
+  }
+
+  // Files a message no longer points at are dropped from the private storage.
+  function forget(message, fields) {
+    return Promise.all(fields
+      .filter(function (f) { return isOpfs(message[f]); })
+      .map(function (f) { return removeFile(opfsName(message[f])); }));
+  }
 
   function messageRow(m) {
     var el = document.createElement('div');
@@ -177,14 +250,57 @@
     el.innerHTML =
       '<select class="side">' + options(SIDES, m.side) + '</select>' +
       '<select class="type">' + options(TYPES, m.type) + '</select>' +
-      (m.type === 'audio'
-        ? '<input class="secs" type="number" min="1" max="600" step="1" /> s'
-        : '<input class="body" type="text" placeholder="Message" />') +
+      typeFields(m) +
       '<input class="time" type="text" placeholder="Time" />' +
       '<button class="x" aria-label="Remove message">&times;</button>';
 
-    var field = el.querySelector(m.type === 'audio' ? '.secs' : '.body');
-    field.value = m.type === 'audio' ? m.seconds : (m.text || '');
+    // Fills an input from the message and writes edits back to it.
+    function bind(selector, read, write) {
+      var field = el.querySelector(selector);
+      field.value = read();
+      field.addEventListener('input', function (e) {
+        write(e.target.value);
+        saveChat();
+      });
+    }
+
+    // The length is the number drawn on an audio note's clock and over a video's
+    // poster, so both types carry it.
+    if (m.type === 'audio' || m.type === 'video') {
+      bind('.secs', function () { return m.seconds; }, function (v) {
+        m.seconds = Math.max(1, Number(v) || 1);
+      });
+    }
+
+    if (m.type === 'audio') {
+      el.querySelector('.wave').addEventListener('change', function (e) {
+        m.wave = e.target.value;
+        saveChat();
+      });
+    } else if (m.type === 'video') {
+      ['src', 'poster'].forEach(function (field) {
+        var input = el.querySelector('.' + field);
+        input.parentNode.querySelector('.name').textContent = shortName(m[field]);
+        input.addEventListener('change', function (e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          var suffix = file.name.slice(file.name.lastIndexOf('.'));
+          forget(m, [field])
+            .then(function () { return saveFile(m.id + '-' + field + suffix, file); })
+            .then(function (ref) {
+              m[field] = ref;
+              saveChat();
+              renderMessages();
+            })
+            .catch(function () {
+              chatStatus.textContent = 'This browser would not store the file.';
+            });
+        });
+      });
+    } else {
+      bind('.body', function () { return m.text || ''; }, function (v) { m.text = v; });
+    }
+
     el.querySelector('.time').value = m.time || '';
 
     el.querySelector('.side').addEventListener('change', function (e) {
@@ -193,20 +309,17 @@
     });
     el.querySelector('.type').addEventListener('change', function (e) {
       m.type = e.target.value;
-      if (m.type === 'audio' && !m.seconds) m.seconds = 13;
+      if (m.type !== 'text' && !m.seconds) m.seconds = 13;
+      if (m.type === 'video' && !m.src) { m.src = VIDEO_SRC; m.poster = VIDEO_POSTER; }
       saveChat();
-      renderMessages();          // the row's field changes with the type
+      renderMessages();          // the row's fields change with the type
     });
     el.querySelector('.time').addEventListener('input', function (e) {
       m.time = e.target.value;
       saveChat();
     });
-    field.addEventListener('input', function (e) {
-      if (m.type === 'audio') m.seconds = Math.max(1, Number(e.target.value) || 1);
-      else m.text = e.target.value;
-      saveChat();
-    });
     el.querySelector('.x').addEventListener('click', function () {
+      forget(m, ['src', 'poster']);          // the message is the only reference
       chat.messages = chat.messages.filter(function (x) { return x !== m; });
       saveChat();
       renderMessages();
