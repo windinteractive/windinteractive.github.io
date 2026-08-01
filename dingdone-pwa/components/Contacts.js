@@ -18,7 +18,7 @@ const ROWS = [
   { id: 'group',  initial: '',   img: '', glyph: './img/chat_group_icon_1.webp', isGroup: true,
     name: 'Group',          msg: 'Received a voice message', time: 'now' },
   { id: 'tm',     initial: 'TM', img: './users/user_tm.webp',
-    name: '婁戴民 (TM)',    msg: '好啊，咁就照呢個方法做',      time: '30+ days ago' },
+    name: '婁戴民 TM',    msg: '好啊，咁就照呢個方法做',      time: '30+ days ago' },
   // { id: 'fok',    initial: '霍', img: './users/user_tei.webp',
   //   name: '霍立德',         msg: '收到，份文件我睇咗喇',        time: '30+ days' },
   // { id: 'jason',  initial: 'J',  img: './users/user_jason.webp',
