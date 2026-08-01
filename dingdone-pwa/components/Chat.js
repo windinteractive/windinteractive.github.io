@@ -59,6 +59,20 @@ const toClock = s =>
 const Wave = ({ wave }) => html`
   <span class="voice__art" style=${`--wave:url('${waveUrl(wave)}')`}></span>`;
 
+const ZOOM = { duration: 260, easing: 'cubic-bezier(.2,.7,.3,1)' };
+const SNAP = { duration: 200, easing: 'ease-out' };
+// Far enough down or up to mean it, rather than a stray finger.
+const DISMISS = 90;
+
+// The transform that lays the player exactly over the tile it opened from.
+// Both rectangles are the untransformed ones, measured before any of this runs.
+const overTile = (tile, rest) => {
+  const scale = tile.width / rest.width;
+  const dx = tile.left + tile.width / 2 - (rest.left + rest.width / 2);
+  const dy = tile.top + tile.height / 2 - (rest.top + rest.height / 2);
+  return `translate(${dx}px, ${dy}px) scale(${scale})`;
+};
+
 export function Chat({ active }) {
   const [input, setInput] = useState('');
   const [sent, setSent] = useState([]);
@@ -68,6 +82,13 @@ export function Chat({ active }) {
   const [files, setFiles] = useState({});         // opfs name -> blob URL
   const scroll = useRef(null);
   const player = useRef(null);
+  const backdrop = useRef(null);
+  const chrome = useRef(null);      // the buttons, dimmed along with the backdrop
+  const tileRect = useRef(null);    // the tile the player grew out of
+  const restRect = useRef(null);    // the player untransformed, for the way back
+  const drag = useRef(null);        // the dismissing gesture, while one is on
+  const swiped = useRef(false);     // a drag just ended, so ignore its click
+  const closing = useRef(false);
 
   // Files picked in configuration.html are read out of the origin private file
   // system once, and the blob URLs stand in for their references below.
@@ -105,24 +126,39 @@ export function Chat({ active }) {
     return () => clearInterval(id);
   }, [playing]);
 
-  // iOS Safari only goes full screen from the video element itself; elsewhere
-  // requestFullscreen works. The overlay already covers the screen if neither does.
+  // The backdrop and the buttons dim together, apart from the player itself.
+  const fade = (from, to, options) => [backdrop.current, chrome.current]
+    .forEach(el => el.animate([{ opacity: from }, { opacity: to }], options));
+
+  const dim = value => [backdrop.current, chrome.current]
+    .forEach(el => { el.style.opacity = value; });
+
+  // Starts playing, and grows the player out of the tile that was tapped.
   useEffect(() => {
     if (!video) return undefined;
     const el = player.current;
     if (!el) return undefined;
-    if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
-    else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    restRect.current = el.getBoundingClientRect();
     el.play().catch(() => {});
 
-    // Swiping full screen away — 'webkitendfullscreen' on iOS, an empty
-    // fullscreenElement elsewhere — leaves the message rather than the overlay.
-    const close = () => setVideo(null);
-    const changed = () => { if (!document.fullscreenElement) close(); };
-    el.addEventListener('webkitendfullscreen', close);
+    // The player is already at its full size: this puts it back over the tile
+    // and lets it grow out of it, the way a messenger opens one.
+    if (tileRect.current) {
+      el.animate(
+        [{ transform: overTile(tileRect.current, restRect.current), borderRadius: '14px' },
+         { transform: 'none', borderRadius: '0px' }],
+        ZOOM
+      );
+      fade(0, 1, ZOOM);
+    }
+
+    // Only reached through the button below, and leaving it is done watching.
+    const ended = () => closeVideo();
+    const changed = () => { if (!document.fullscreenElement) closeVideo(); };
+    el.addEventListener('webkitendfullscreen', ended);
     document.addEventListener('fullscreenchange', changed);
     return () => {
-      el.removeEventListener('webkitendfullscreen', close);
+      el.removeEventListener('webkitendfullscreen', ended);
       document.removeEventListener('fullscreenchange', changed);
     };
   }, [video]);
@@ -134,9 +170,78 @@ export function Chat({ active }) {
 
   const toggle = id => { setElapsed(0); setPlaying(p => (p === id ? null : id)); };
 
+  const openVideo = (m, e) => {
+    tileRect.current = e.currentTarget.getBoundingClientRect();
+    closing.current = false;
+    setVideo(m);
+  };
+
+  // Shrinks back into the tile before the overlay goes, from wherever a drag
+  // left it. 'forwards' holds the last frame, so nothing flashes at full size.
   const closeVideo = () => {
+    if (closing.current) return;
+    closing.current = true;
+    drag.current = null;
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    setVideo(null);
+
+    const el = player.current;
+    if (!el || !tileRect.current || !restRect.current) { setVideo(null); return; }
+    el.pause();
+    const done = () => setVideo(null);
+    fade(backdrop.current.style.opacity || 1, 0, { ...ZOOM, fill: 'forwards' });
+    el.animate(
+      [{ transform: el.style.transform || 'none', borderRadius: '0px' },
+       { transform: overTile(tileRect.current, restRect.current), borderRadius: '14px' }],
+      { ...ZOOM, fill: 'forwards' }
+    ).finished.then(done, done);
+  };
+
+  const expand = () => {
+    const el = player.current;
+    if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+    else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  };
+
+  // Only the empty surround closes on a tap: the player keeps its controls, and
+  // the buttons over it have their own.
+  const backdropTap = e => {
+    if (swiped.current) { swiped.current = false; return; }
+    if (e.target === backdrop.current || e.target === e.currentTarget) closeVideo();
+  };
+
+  // Dragging the surround pulls the player away and dims the backdrop; far
+  // enough and it goes. It starts on the surround only — capturing the pointer
+  // over the player or a button would retarget that press's click to here.
+  const dragStart = e => {
+    if (closing.current) return;
+    if (e.target !== backdrop.current && e.target !== e.currentTarget) return;
+    drag.current = { from: e.clientY, moved: 0 };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const dragMove = e => {
+    if (!drag.current) return;
+    const moved = e.clientY - drag.current.from;
+    drag.current.moved = moved;
+    const away = Math.min(Math.abs(moved) / 600, 0.25);
+    player.current.style.transform = `translateY(${moved}px) scale(${1 - away})`;
+    dim(String(1 - Math.min(Math.abs(moved) / 400, 0.75)));
+  };
+
+  const dragEnd = () => {
+    const gesture = drag.current;
+    if (!gesture) return;
+    drag.current = null;
+    // A drag ends in a click on the backdrop, which would otherwise be read as
+    // the tap that closes it.
+    swiped.current = Math.abs(gesture.moved) > 4;
+    if (Math.abs(gesture.moved) > DISMISS) { closeVideo(); return; }
+
+    const el = player.current;
+    el.animate([{ transform: el.style.transform || 'none' }, { transform: 'none' }], SNAP);
+    fade(backdrop.current.style.opacity || 1, 1, SNAP);
+    el.style.transform = '';
+    dim('');
   };
 
   const send = () => {
@@ -153,7 +258,7 @@ export function Chat({ active }) {
   // the poster is only the frame.
   const videoTile = m => html`
     <button type="button" class="video-msg" aria-label="Play video message"
-            onClick=${() => setVideo(m)}>
+            onClick=${e => openVideo(m, e)}>
       <img class="video-msg__poster" src=${asset(m.poster || VIDEO_POSTER)} alt="" />
       ${m.seconds ? html`
         <span class="video-msg__len ticker-number">${toClock(m.seconds)}</span>` : null}
@@ -258,12 +363,19 @@ export function Chat({ active }) {
       </div>
 
       ${video ? html`
-        <div class="video-full" onClick=${closeVideo}>
+        <div class="video-full" onClick=${backdropTap}
+             onPointerDown=${dragStart} onPointerMove=${dragMove}
+             onPointerUp=${dragEnd} onPointerCancel=${dragEnd}>
+          <div class="video-full__back" ref=${backdrop}></div>
           <video ref=${player} class="video-full__el" controls playsinline
                  src=${asset(video.src || VIDEO_SRC)} poster=${asset(video.poster || VIDEO_POSTER)}
-                 onEnded=${closeVideo} onClick=${e => e.stopPropagation()}></video>
-          <button type="button" class="video-full__close" aria-label="Close video"
-                  onClick=${closeVideo}>×</button>
+                 onEnded=${closeVideo}></video>
+          <div class="video-full__chrome" ref=${chrome}>
+            <button type="button" class="video-full__btn video-full__close" aria-label="Close video"
+                    onClick=${closeVideo}>×</button>
+            <button type="button" class="video-full__btn video-full__expand" aria-label="Full screen"
+                    onClick=${expand}><${Icon} name="expand" size=${18} /></button>
+          </div>
         </div>`
       : null}
     </div>`;

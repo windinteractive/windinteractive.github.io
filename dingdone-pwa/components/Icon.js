@@ -28,6 +28,7 @@ const PATHS = {
   back: () => html`<line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />`,
   backspace: () => html`<path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z" /><line x1="12" y1="9.5" x2="17" y2="14.5" /><line x1="17" y1="9.5" x2="12" y2="14.5" />`,
   'double-check': () => html`<polyline points="1 12.5 5.5 17 13 7" /><polyline points="7.5 12.5 12 17 19.5 7" />`,
+  expand: () => html`<polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />`,
   mic: () => html`<rect x="9" y="2" width="6" height="11" rx="3" /><path d="M5 10v2a7 7 0 0 0 14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" />`,
   'mic-circle': () => html`<circle cx="12" cy="12" r="11" /> <g stroke='#fff'  style="transform: scale(0.69); transform-origin: center center"><rect x="9" y="2" width="6" height="11" rx="3" /><path d="M5 10v2a7 7 0 0 0 14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /></g>`,
 
