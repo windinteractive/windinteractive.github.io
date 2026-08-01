@@ -63,6 +63,8 @@ const ZOOM = { duration: 260, easing: 'cubic-bezier(.2,.7,.3,1)' };
 const SNAP = { duration: 200, easing: 'ease-out' };
 // Far enough down or up to mean it, rather than a stray finger.
 const DISMISS = 90;
+// Under this, the finger never really moved and it counts as a tap.
+const TAP = 4;
 
 // The transform that lays the player exactly over the tile it opened from.
 // Both rectangles are the untransformed ones, measured before any of this runs.
@@ -87,7 +89,6 @@ export function Chat({ active }) {
   const tileRect = useRef(null);    // the tile the player grew out of
   const restRect = useRef(null);    // the player untransformed, for the way back
   const drag = useRef(null);        // the dismissing gesture, while one is on
-  const swiped = useRef(false);     // a drag just ended, so ignore its click
   const closing = useRef(false);
 
   // Files picked in configuration.html are read out of the origin private file
@@ -145,8 +146,8 @@ export function Chat({ active }) {
     // and lets it grow out of it, the way a messenger opens one.
     if (tileRect.current) {
       el.animate(
-        [{ transform: overTile(tileRect.current, restRect.current), borderRadius: '14px' },
-         { transform: 'none', borderRadius: '0px' }],
+        [{ transform: overTile(tileRect.current, restRect.current), borderRadius: '14px', opacity: 0 },
+         { transform: 'none', borderRadius: '0px', opacity: 1 }],
         ZOOM
       );
       fade(0, 1, ZOOM);
@@ -190,8 +191,8 @@ export function Chat({ active }) {
     const done = () => setVideo(null);
     fade(backdrop.current.style.opacity || 1, 0, { ...ZOOM, fill: 'forwards' });
     el.animate(
-      [{ transform: el.style.transform || 'none', borderRadius: '0px' },
-       { transform: overTile(tileRect.current, restRect.current), borderRadius: '14px' }],
+      [{ transform: el.style.transform || 'none', borderRadius: '0px', opacity: 1 },
+       { transform: overTile(tileRect.current, restRect.current), borderRadius: '14px', opacity: 0 }],
       { ...ZOOM, fill: 'forwards' }
     ).finished.then(done, done);
   };
@@ -202,20 +203,17 @@ export function Chat({ active }) {
     else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
   };
 
-  // Only the empty surround closes on a tap: the player keeps its controls, and
-  // the buttons over it have their own.
-  const backdropTap = e => {
-    if (swiped.current) { swiped.current = false; return; }
-    if (e.target === backdrop.current || e.target === e.currentTarget) closeVideo();
+  const togglePlay = () => {
+    const el = player.current;
+    if (el.paused) el.play().catch(() => {}); else el.pause();
   };
 
-  // Dragging the surround pulls the player away and dims the backdrop; far
-  // enough and it goes. It starts on the surround only — capturing the pointer
-  // over the player or a button would retarget that press's click to here.
+  // Dragging pulls the player away and dims the backdrop; far enough and it
+  // goes. The buttons are left out: capturing the pointer over one would
+  // retarget that press's click to here, and it would never fire.
   const dragStart = e => {
-    if (closing.current) return;
-    if (e.target !== backdrop.current && e.target !== e.currentTarget) return;
-    drag.current = { from: e.clientY, moved: 0 };
+    if (closing.current || chrome.current.contains(e.target)) return;
+    drag.current = { from: e.clientY, moved: 0, onPlayer: e.target === player.current };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -232,16 +230,21 @@ export function Chat({ active }) {
     const gesture = drag.current;
     if (!gesture) return;
     drag.current = null;
-    // A drag ends in a click on the backdrop, which would otherwise be read as
-    // the tap that closes it.
-    swiped.current = Math.abs(gesture.moved) > 4;
-    if (Math.abs(gesture.moved) > DISMISS) { closeVideo(); return; }
+    const moved = Math.abs(gesture.moved);
+    if (moved > DISMISS) { closeVideo(); return; }
 
+    // Back to rest, whether the drag fell short or never really started.
     const el = player.current;
     el.animate([{ transform: el.style.transform || 'none' }, { transform: 'none' }], SNAP);
     fade(backdrop.current.style.opacity || 1, 1, SNAP);
     el.style.transform = '';
     dim('');
+
+    // A press that went nowhere is a tap: on the player it plays and pauses,
+    // and anywhere else it closes. Taps are read here rather than from a click,
+    // which the pointer capture above would have retargeted.
+    if (moved > TAP) return;
+    if (gesture.onPlayer) togglePlay(); else closeVideo();
   };
 
   const send = () => {
@@ -363,11 +366,11 @@ export function Chat({ active }) {
       </div>
 
       ${video ? html`
-        <div class="video-full" onClick=${backdropTap}
+        <div class="video-full"
              onPointerDown=${dragStart} onPointerMove=${dragMove}
              onPointerUp=${dragEnd} onPointerCancel=${dragEnd}>
           <div class="video-full__back" ref=${backdrop}></div>
-          <video ref=${player} class="video-full__el" controls playsinline
+          <video ref=${player} class="video-full__el" playsinline
                  src=${asset(video.src || VIDEO_SRC)} poster=${asset(video.poster || VIDEO_POSTER)}
                  onEnded=${closeVideo}></video>
           <div class="video-full__chrome" ref=${chrome}>

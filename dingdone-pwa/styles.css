@@ -711,6 +711,7 @@ html, body {
   height: auto;
   max-height: 100%;
   background: #000;
+  cursor: pointer;   /* it has no controls; tapping it plays and pauses */
   will-change: transform;
 }
 /* Holds the buttons so they dim with the backdrop, without taking the taps that
