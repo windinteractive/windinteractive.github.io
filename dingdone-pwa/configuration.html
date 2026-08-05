@@ -59,6 +59,7 @@
     font-size: 14px;
   }
   .field input { flex: 1; min-width: 0; }
+  .field input[type="checkbox"] { flex: none; width: 18px; height: 18px; accent-color: #f15a24; }
   /* Wraps rather than overflows: the whole row does not fit a phone's width. */
   .msg-row {
     display: flex;
@@ -116,11 +117,11 @@
     <h2>Group chat</h2>
     <p class="hint">
       The title and the conversation on
-      <a href="./index.html#/chat/group">#/chat/group</a>. Audio messages are
-      fake — the player just counts the duration out — and pick their drawing
-      from <code>icons/waves/</code>, "Auto" cycling through the five. A video
-      message plays full screen; its file and poster are copied into this
-      browser's private storage, and removed again with the message.
+      <a href="./index.html#/chat/group">#/chat/group</a>. An audio message plays
+      the file it points at; without one the player just counts the duration out.
+      Its drawing comes from <code>icons/waves/</code>, "Auto" cycling through the
+      five. A video message plays full screen. Files picked here are copied into
+      this browser's private storage, and removed again with the message.
     </p>
 
     <label class="field">Title <input id="chatTitle" type="text" /></label>
@@ -149,12 +150,25 @@
     <p class="status" id="splashStatus"></p>
   </section>
 
+  <section>
+    <h2>Onboarding</h2>
+    <p class="hint">
+      Whether "Get Start" opens the login screen, or skips it and goes straight
+      to the home screen.
+    </p>
+
+    <label class="field"><input id="skipLogin" type="checkbox" /> Skip login</label>
+
+    <p class="status" id="onboardingStatus"></p>
+  </section>
+
 <script type="module">
   import { OPFS, isOpfs, opfsName, saveFile, removeFile } from './opfs.js';
 
   var CHAT_KEY = 'chat:config';
   var VIDEO_SRC = './img/chat.mov';
   var VIDEO_POSTER = './img/chat.png';
+  var AUDIO_SRC = ['./audio/1.wav', './audio/2.wav', './audio/2.5.wav', './audio/3.wav'];
   // Kept in step with DEFAULTS in components/Chat.js.
   var CHAT_DEFAULTS = {
     title: '婁戴民 TM',
@@ -162,14 +176,14 @@
       { id: 'v1',  side: 'in',  type: 'audio', seconds: 13, time: '11:27 AM' },
       { id: 'v2',  side: 'out', type: 'audio', seconds: 27, time: '11:27 AM' },
       { id: 'v3',  side: 'in',  type: 'audio', seconds: 8,  time: '11:28 AM' },
-      { id: 'v4',  side: 'out', type: 'audio', seconds: 19, time: '11:28 AM' },
-      { id: 'v5',  side: 'in',  type: 'audio', seconds: 34, time: '11:29 AM' },
-      { id: 'v6',  side: 'out', type: 'audio', seconds: 11, time: '11:30 AM' },
-      { id: 'v7',  side: 'in',  type: 'audio', seconds: 22, time: '11:31 AM' },
-      { id: 'v8',  side: 'out', type: 'audio', seconds: 6,  time: '11:31 AM' },
-      { id: 'v9',  side: 'in',  type: 'audio', seconds: 41, time: '11:32 AM' },
-      { id: 'v10', side: 'out', type: 'audio', seconds: 16, time: '11:33 AM' },
-      { id: 'v11', side: 'out', type: 'video', src: VIDEO_SRC, poster: VIDEO_POSTER, seconds: 8, time: '11:34 AM' }
+      { id: 'v4',  side: 'out', type: 'audio', seconds: 19, time: '11:20 AM' },
+      { id: 'v5',  side: 'in',  type: 'audio', seconds: 34, time: '11:23 AM' },
+      { id: 'v6',  side: 'out', type: 'audio', seconds: 11, time: '23:44 PM', src: AUDIO_SRC[0] },
+      { id: 'v7',  side: 'in',  type: 'audio', seconds: 22, time: '23:46 PM' },
+      { id: 'v8',  side: 'out', type: 'audio', seconds: 15, time: '16:43 PM', src: AUDIO_SRC[1] },
+      { id: 'v9',  side: 'in',  type: 'audio', seconds: 9,  time: '11:20 AM', src: AUDIO_SRC[2] },
+      { id: 'v10', side: 'out', type: 'audio', seconds: 15, time: '15:37 PM', src: AUDIO_SRC[3] },
+      { id: 'v11', side: 'out', type: 'video', src: VIDEO_SRC, poster: VIDEO_POSTER, seconds: 8, time: '15:37 PM' }
     ]
   };
 
@@ -213,7 +227,8 @@
   function typeFields(m) {
     if (m.type === 'audio') {
       return '<input class="secs" type="number" min="1" max="600" step="1" /> s' +
-        '<select class="wave">' + options(WAVES, m.wave || '') + '</select>';
+        '<select class="wave">' + options(WAVES, m.wave || '') + '</select>' +
+        picker('src', 'Audio', 'audio/*');
     }
     if (m.type === 'video') {
       return '<input class="secs" type="number" min="1" max="600" step="1" /> s' +
@@ -272,13 +287,8 @@
       });
     }
 
-    if (m.type === 'audio') {
-      el.querySelector('.wave').addEventListener('change', function (e) {
-        m.wave = e.target.value;
-        saveChat();
-      });
-    } else if (m.type === 'video') {
-      ['src', 'poster'].forEach(function (field) {
+    if (m.type !== 'text') {
+      (m.type === 'audio' ? ['src'] : ['src', 'poster']).forEach(function (field) {
         var input = el.querySelector('.' + field);
         input.parentNode.querySelector('.name').textContent = shortName(m[field]);
         input.addEventListener('change', function (e) {
@@ -297,7 +307,14 @@
             });
         });
       });
-    } else {
+    }
+
+    if (m.type === 'audio') {
+      el.querySelector('.wave').addEventListener('change', function (e) {
+        m.wave = e.target.value;
+        saveChat();
+      });
+    } else if (m.type === 'text') {
       bind('.body', function () { return m.text || ''; }, function (v) { m.text = v; });
     }
 
@@ -372,6 +389,17 @@
     localStorage.setItem(SPLASH_KEY, String(Math.round(seconds * 1000)));
     splashDurationEl.value = seconds;
     splashStatus.textContent = 'Saved. Reload the splash screen to see it.';
+  });
+
+  var SKIP_LOGIN_KEY = 'onboarding:skipLogin';
+
+  var skipLoginEl = document.getElementById('skipLogin');
+  var onboardingStatus = document.getElementById('onboardingStatus');
+
+  skipLoginEl.checked = localStorage.getItem(SKIP_LOGIN_KEY) === '1';
+  skipLoginEl.addEventListener('change', function () {
+    localStorage.setItem(SKIP_LOGIN_KEY, skipLoginEl.checked ? '1' : '0');
+    onboardingStatus.textContent = 'Saved. Reload the app to see it.';
   });
 </script>
 </body>

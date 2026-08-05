@@ -16,21 +16,21 @@ const waveUrl = name => `./icons/waves/${name}.svg`;
 // Used when a video message leaves `src` / `poster` empty.
 const VIDEO_SRC = './img/chat.mov';
 const VIDEO_POSTER = './img/chat.png';
-
+const AUDIO_SRC = ['./audio/1.wav', './audio/2.wav', './audio/2.5.wav', './audio/3.wav'];
 const DEFAULTS = {
   title: '婁戴民 TM',
   messages: [
     { id: 'v1',  side: 'in',  type: 'audio', seconds: 13, time: '11:27 AM' },
     { id: 'v2',  side: 'out', type: 'audio', seconds: 27, time: '11:27 AM' },
     { id: 'v3',  side: 'in',  type: 'audio', seconds: 8,  time: '11:28 AM' },
-    { id: 'v4',  side: 'out', type: 'audio', seconds: 19, time: '11:28 AM' },
-    { id: 'v5',  side: 'in',  type: 'audio', seconds: 34, time: '11:29 AM' },
-    { id: 'v6',  side: 'out', type: 'audio', seconds: 11, time: '11:30 AM' },
-    { id: 'v7',  side: 'in',  type: 'audio', seconds: 22, time: '11:31 AM' },
-    { id: 'v8',  side: 'out', type: 'audio', seconds: 6,  time: '11:31 AM' },
-    { id: 'v9',  side: 'in',  type: 'audio', seconds: 41, time: '11:32 AM' },
-    { id: 'v10', side: 'out', type: 'audio', seconds: 16, time: '11:33 AM' },
-    { id: 'v11', side: 'out',  type: 'video', src: VIDEO_SRC, poster: VIDEO_POSTER, seconds: 8, time: '11:34 AM' },
+    { id: 'v4',  side: 'out', type: 'audio', seconds: 19, time: '11:20 AM' },
+    { id: 'v5',  side: 'in',  type: 'audio', seconds: 34, time: '11:23 AM' },
+    { id: 'v6',  side: 'out', type: 'audio', seconds: 11, time: '23:44 PM', src: AUDIO_SRC[0]},
+    { id: 'v7',  side: 'in',  type: 'audio', seconds: 22, time: '23:46 PM' },
+    { id: 'v8',  side: 'out', type: 'audio', seconds: 15,  time: '16:43 PM', src: AUDIO_SRC[1]  },
+    { id: 'v9',  side: 'in',  type: 'audio', seconds: 9, time: '11:20 AM', src: AUDIO_SRC[2]  },
+    { id: 'v10', side: 'out', type: 'audio', seconds: 15, time: '15:37 PM', src: AUDIO_SRC[3] },
+    { id: 'v11', side: 'out',  type: 'video', src: VIDEO_SRC, poster: VIDEO_POSTER, seconds: 8, time: '15:37 PM' },
   ],
 };
 
@@ -114,18 +114,29 @@ export function Chat({ active }) {
   // DOM as a URL the browser would try to fetch.
   const asset = value => (isOpfs(value) ? files[opfsName(value)] || '' : value);
 
-  // No audio file exists — this walks a wall clock across the waveform so the
-  // player behaves like one.
+  // A message that carries a file plays it; the rest have nothing to play, so a
+  // wall clock walks the waveform and the player behaves the same either way.
   useEffect(() => {
     if (!playing) return undefined;
-    const total = MESSAGES.find(m => m.id === playing).seconds;
+    const message = MESSAGES.find(m => m.id === playing);
+    const src = asset(message.src);
+
+    if (src) {
+      const el = new Audio(src);
+      el.addEventListener('ended', () => { setPlaying(null); setElapsed(0); });
+      el.play().catch(() => {});
+      const id = setInterval(() => setElapsed(el.currentTime), 100);
+      return () => { clearInterval(id); el.pause(); };
+    }
+
+    const total = message.seconds;
     const started = Date.now();
     const id = setInterval(() => {
       const t = (Date.now() - started) / 1000;
       if (t >= total) { setPlaying(null); setElapsed(0); } else setElapsed(t);
     }, 100);
     return () => clearInterval(id);
-  }, [playing]);
+  }, [playing, files]);
 
   // The backdrop and the buttons dim together, apart from the player itself.
   const fade = (from, to, options) => [backdrop.current, chrome.current]
@@ -304,7 +315,7 @@ export function Chat({ active }) {
                           aria-label=${playing === m.id ? 'Pause voice message' : 'Play voice message'}>
                     <${Wave} wave=${m.wave} />
                     <span class="voice__played"
-                          style=${`width:${playing === m.id ? (elapsed / m.seconds) * 100 : 0}%`}>
+                          style=${`width:${playing === m.id ? Math.min(elapsed / m.seconds, 1) * 100 : 0}%`}>
                       <${Wave} wave=${m.wave} />
                     </span>
                   </button>
@@ -321,7 +332,7 @@ export function Chat({ active }) {
                         aria-label=${playing === m.id ? 'Pause voice message' : 'Play voice message'}>
                   <${Wave} wave=${m.wave} />
                   <span class="voice__played"
-                        style=${`width:${playing === m.id ? (elapsed / m.seconds) * 100 : 0}%`}>
+                        style=${`width:${playing === m.id ? Math.min(elapsed / m.seconds, 1) * 100 : 0}%`}>
                     <${Wave} wave=${m.wave} />
                   </span>
                 </button>
