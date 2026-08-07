@@ -1,5 +1,5 @@
 // Bump to invalidate the precache; the activate handler drops older versions.
-const CACHE = 'dingdong-v10';
+const CACHE = 'dingdong-v11';
 
 // The app shell. The 192/512 manifest icons are deliberately absent: the OS
 // fetches those at install time, and precaching them would add ~530 KB the

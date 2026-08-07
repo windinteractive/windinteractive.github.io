@@ -1,0 +1,237 @@
+info:
+    project: &project ILD
+    proj_id: &proj_id 2976
+    root_dir: &root_dir 'Y:'
+    asset_dir: &asset_dir asset
+    shot_dir: &shot_dir seq
+    work_dir: &work_dir Work
+    asset_work_dir: &asset_work_dir workSpace
+    asset_datacheck_dir: &asset_datacheck_dir Assets
+    datacheck_dir: &datacheck_dir 'img/check/datacheck'
+    publish_dir: &publish_dir Publish
+    dcc_dir: &dcc_dir dcc
+    data_dir: &data_dir data
+    access_database: True
+    vers_dir_exists: True
+    create_symlink: False
+    version_padding: &version_padding 3
+    maya_proj_dir: &maya_proj_dir maya
+    houdini_proj_dir: &houdini_proj_dir houdini
+    maya_working_dir: &maya_working_dir scenes
+    local_config_path: 'Y:/ILD/lib/tools/log/taPublishTool'
+    sync_cloud_drive: False
+    sync_cloud_drive_datacheck: False
+    sync_cloud_drive_publish: False
+    # ========================= Texutures =========================
+    default_texture_dir: &default_texture_dir textures
+    texture_sub_folder_root: &texture_sub_folder_root textures
+    sub_folder_process_mode: limit
+    sub_folder_build_lv: 1
+    original_res_dir: &original_res_dir large
+    texture_path_size_index: 9
+    resize_repath_matchup: '{"Env Assembly":{"ASB_GUIDE":{"DataCheck":{"repath_to_res":"large", "repath":True, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                          "Publish":{"repath_to_res":"large", "repath":True, "resize":{"value":False}, "convert_tx":False, "copy":False}},
+                                             "ASB_HIGH":{"DataCheck":{"repath_to_res":"large", "repath":True, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                          "Publish":{"repath_to_res":"large", "repath":True, "resize":{"value":True, "convert_tx":False, "copy":False}},
+                                             "ASB_RIG":{"DataCheck":{"repath_to_res":"large", "repath":True, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                        "Publish":{"repath_to_res":"large", "repath":True, "resize":{"value":False}, "convert_tx":False, "copy":False}}},
+                             "Env Setpiece":{"STP_GEO":{"DataCheck":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                        "Publish":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False}},
+                                             "STP_TEX":{"DataCheck":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                        "Publish":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False}},
+                                             "STP_MTL":{"DataCheck":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                        "Publish":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False}},
+                                             "STP_CMP":{"DataCheck":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False},
+                                                        "Publish":{"repath_to_res":"small", "repath":False, "resize":{"value":False}, "convert_tx":False, "copy":False}}}}'
+    texture_sequence_padding: 4
+    copy_same_name_file_as_texture: False
+    image_converter_path: 'Y:/ToeiAnim/App/windows/ImageMagick/6.9.2/x64/sys/convert.exe'
+    image_convert_alpha_disabled: '{"value":False, "option":"-alpha" "off"}'
+    image_convert_format: 'png'
+    image_convert_maxthreads: 8
+    ocio_config_path: 'Y:/ToeiAnim/Data/windows/colorManagement/SDB2025DA/share/sRGB/config.ocio'
+    tx_converter_path: 'Y:/ToeiAnim/App/windows/maya/2024/x64/usr/thirdParty/mtoa/5.3.5.3/bin/maketx.exe'
+    color_space_info: '{"large":{"noConvert":{}, "ACEScg":{}}}'
+    tx_convert_args: '["-v", "--unpremult", "--oiio", "-u", "--format", "exr", "-d", "half", "--compression", "dwaa"]'
+    #============================ Path construct ==================================
+    root_path: &root_path !path_format ['{}/{}', *root_dir, *project]
+    asset_work_path: &asset_work_path !path_format ['{}/{}', *root_path, *asset_work_dir]
+    # shot_work_path: &shot_work_path !path_format ['{}/{}/{}', *root_path, *work_dir, *shot_dir]
+    # asset_work_file_dir: !path_format ['{}/{{step}}/{{category}}/{{subCategory}}/{{assetName}}/model/{{task}}', *asset_work_path]
+    # shot_work_file_dir: !path_format ['{}/{{category}}/{{assetName}}/{{step}}/{{task}}/{}/{}/{}', *shot_work_path, *dcc_dir, *maya_proj_dir, *maya_working_dir]
+    asset_datacheck_path: &asset_datacheck_path !path_format ['{}/{}', *root_path, *datacheck_dir]
+    shot_datacheck_path: &shot_datacheck_path !path_format ['{}/{}/{}', *root_path, *datacheck_dir, *shot_dir]
+    # asset_datacheck_file_dir: !path_format ['{}/{{category}}/{{subCategory}}/{{assetName}}/{{step}}/{{task}}/{}/{}', *asset_datacheck_path, *dcc_dir, *maya_proj_dir]
+    # shot_datacheck_file_dir: !path_format ['{}/{{category}}/{{assetName}}/{{step}}/{{task}}/{}/{}', *shot_datacheck_path, *dcc_dir, *maya_proj_dir]
+    # working_file_pattern: &working_file_pattern !path_format ['{{assetName}}(.*)_(v[0-9]{{{{{}}}}})\.(mb|ma|nk|fbx)', *version_padding]
+    # datacheck_file_pattern: &datacheck_file_pattern !path_format ['{{assetName}}_{{step}}_{{task}}(.*)_(v[0-9]{{{{{}}}}})\.(mb|ma|nk|fbx)', *version_padding]
+    # ========================= External execute  =========================
+    app_mayapy: 'C:/Program Files/Autodesk/Maya2024/bin/mayapy.exe'
+    module_MayaPublish: 'MayaPublish.py'
+    app_hoduini: 'C:/Program Files/Side Effects Software/Houdini 20.5.522/python311/python.exe'
+    app_default_py310: 'Y:/ToeiAnim/App/windows/python/3.10.8/x64/sys/bin/Python310/python.exe'
+    app_default_py311: 'Y:/ToeiAnim/App/windows/python/3.11.0/x64/sys/bin/Python311/python.exe'
+    module_directcopy: 'DirectCopy.py'
+    module_usbpublish: 'UsdPublish.py'
+    # ========================= Control version selection  =========================
+    datacheck_version_override: False
+    publish_version_override: True
+    # ======================== Extra config of another apps ========================
+    j_model_cleaner_config: 'Y:/ToeiAnim/App/windows/maya/share/x64/usr/toeiAnim/scripts/mayaJModelCleaner/project/CH.ini'
+    j_model_cleaner_cfg_define: 'Y:/ToeiAnim/App/windows/maya/share/x64/usr/toeiAnim/scripts/mayaJModelCleaner/define.ini'
+    # =================== Using by DefaultDrawingOverrdies module ==================
+    default_drawing_overrides_keep_layer: True
+    # =================== Using by DeleteUnusedPencilNodes module ==================
+    pencil_plugins_name: 'Pencil4'
+    # =================== Task and directory mapping ==================
+    task_dir_mapping: '{"Env Assembly":{"ASB_GUIDE":"guide", "ASB_HIGH":"assembly", "ASB_RIG":"rig"},
+                        "Env Setpiece":{"STP_GEO":"geo", "STP_TEX":"tex", "STP_MTL":"mtl", "STP_CMP":"component"}}'
+    # =================== Publish data type ==================
+    publish_data_types: '{"types":{"temp":{}, "final":{}}, 
+                          "default_selection":"final"}'
+    # =================== Shotgrid entity name mapping ==================
+    sg_entities_mapping: '{"Asset":{"name":"Asset", "fields":{}},
+                           "Task":{"name":"Task", "fields":{"File_Versions":"sg_toei_file_version",
+                                                           "File_Versions_toei_task":"sg_file_versions",
+                                                           "Status":"sg_status_list"}},
+                           "PublishVersion":{"name":"CustomEntity24", 
+                                             "fields":{"File_Version":"sg_toei_file_version",
+                                                      "Task_Link":"sg_toei_task_link",
+                                                      "Version_Count":"sg_toei_version_count",
+                                                      "Version_Type":"sg_toei_version_type",
+                                                      "Production":"sg_toei_production_use",
+                                                      "Status":"sg_status_list",
+                                                      "Metadata":"sg_toei_metadata"}}, 
+                           "FileVersion":{"name":"CustomEntity21", "fields":{}},
+                           "PublishedFile":{"name":"PublishedFile",
+                                            "fields":{"Publish_Version":"sg_toei_publish_version",
+                                                     "Version_File_Path":"sg_toei_version_file_path",
+                                                     "Publish_Version_Production":"sg_toei_publish_version.CustomEntity24.sg_toei_production_use"}}}'
+    # =================== Enttity Status change mapping ==================
+    status_change: '{"Task":{"Status":{"DataCheck":"tmppub", "Publish":"cmpt"}},
+                     "PublishVersion":{"Production":{"temp":False, "final":True}, "Status":{"DataCheck":"cmpt", "Publish":"cmpt"}}}'
+    # ========================= Using by Meta node  =========================
+    maya_meta_node_config: 'env/ILD/meta_node_config.json'
+    rig_system_control_grps: '["*control_grp"]'
+    # =================== Working file directory and file name pattern ==================
+    asset_working_file_dirs: '{"Env Assembly":{"ASB_GUIDE":{"DataCheck":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}/guide", "item":"maya"}],
+                                                                       "filePattern":"{assetName}(_guide)(v[0-9]{{3}})_.*\.(mb)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}},
+                                                            "Publish":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}", "item":"(guide)"},
+                                                                                     {"dir":"", "item":"(v[0-9]{{3}})"}],
+                                                                       "filePattern":"{assetName}\.(mb)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}}},
+                                               "ASB_HIGH":{"DataCheck":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}/assembly", "item":"houdini"}],
+                                                                       "filePattern":"{assetName}(_assembly)(v[0-9]{{3}})_.*\.(hip)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}},
+                                                          "Publish":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}", "item":"(assembly)"},
+                                                                                   {"dir":"", "item":"(v[0-9]{{3}})"}],
+                                                                     "filePattern":"{assetName}\.(hip)",
+                                                                     "fetchCfg":{"fileVer":1, "fileExt":2}}},
+                                               "ASB_RIG":{"DataCheck":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}/rig", "item":"maya"}],
+                                                                       "filePattern":"{assetName}(_rig)(v[0-9]{{3}})_.*\.(mb)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}},
+                                                          "Publish":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}", "item":"(rig)"},
+                                                                                   {"dir":"", "item":"(v[0-9]{{3}})"}],
+                                                                     "filePattern":"{assetName}\.(mb)",
+                                                                     "fetchCfg":{"fileVer":1, "fileExt":2}}}},
+                               "Env Setpiece":{"STP_GEO":{"DataCheck":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}/geo", "item":"houdini"}],
+                                                                       "filePattern":"{assetName}(_geo)(v[0-9]{{3}})_.*\.(hip)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}},
+                                                          "Publish":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}", "item":"(geo)"},
+                                                                                   {"dir":"", "item":"(v[0-9]{{3}})"}],
+                                                                     "filePattern":"{assetName}\.(hip)",
+                                                                     "fetchCfg":{"fileVer":1, "fileExt":2}}},
+                                               "STP_TEX":{"DataCheck":{"dirPattern":"{actionRootPath}/{step}/{category}/{subCategory}/{assetName}/model/{task}",
+                                                                       "filePattern":"{assetName}(.*)_(v[0-9]{{3}})\.(mb)"},
+                                                          "Publish":{"dirPattern":"{actionRootPath}/{category}/{subCategory}/{assetName}/{step}/{task}/Dcc/maya",
+                                                                     "filePattern":"{assetName}(.*)_(v[0-9]{{3}})\.(mb)"}},
+                                               "STP_MTL":{"DataCheck":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}/mtl", "item":"houdini"}],
+                                                                       "filePattern":"{assetName}(_mtl)(v[0-9]{{3}})_.*\.(hip)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}},
+                                                          "Publish":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}", "item":"(mtl)"},
+                                                                                   {"dir":"", "item":"(v[0-9]{{3}})"}],
+                                                                     "filePattern":"{assetName}\.(hip)",
+                                                                     "fetchCfg":{"fileVer":1, "fileExt":2}}},
+                                               "STP_CMP":{"DataCheck":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}/component", "item":"houdini"}],
+                                                                       "filePattern":"{assetName}(_component)(v[0-9]{{3}})_.*\.(hip)",
+                                                                       "fetchCfg":{"fileVer":1, "fileExt":2}},
+                                                          "Publish":{"dirPattern":[{"dir":"{actionRootPath}/{category}/{subCategory}/{assetName}", "item":"(component)"},
+                                                                                   {"dir":"", "item":"(v[0-9]{{3}})"}],
+                                                                     "filePattern":"{assetName}\.(hip)",
+                                                                     "fetchCfg":{"fileVer":1, "fileExt":2}}}}}'
+# =================== DataCheck/Publish label ==================
+    datacheck_publish_label: '{"DataCheck":"Data Check", "Publish":"Publish"}'
+# =================== UI default settings ==================
+    tapublishtool_ui_options_settings: '{"modeling":{"MDL_LOW":{"DataCheck":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                             "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                             "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}},
+                                                                "Publish":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                           "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                           "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}}},
+                                                     "MDL_HIGH":{"DataCheck":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                              "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                              "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}},
+                                                                 "Publish":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                            "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                            "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}}},
+                                                     "MDL_HIGHPRI":{"DataCheck":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                                 "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                                 "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}},
+                                                                    "Publish":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                               "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                               "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}}},
+                                                     "MDL_HIGHSEC":{"DataCheck":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                                 "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                                 "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}},
+                                                                    "Publish":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                               "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                               "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}}},
+                                                     "MDL_FAC":{"DataCheck":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                             "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                             "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}},
+                                                                "Publish":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                           "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                           "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}}},
+                                                     "MDL_FACPRE":{"DataCheck":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                                "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                                "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}},
+                                                                   "Publish":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":True},
+                                                                              "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setVisibility":True, "setChecked":False},
+                                                                              "self.texturesProcessOptionsLabel":{"uiType":"label", "setVisibility":True}}}}}'
+    tapublishtool_ui_selection_trigger: '{"modeling":{"MDL_HIGH":{"Publish":{"self.pbVerSelComboBox":{"uiType":"combobox",
+                                                                                                      "triggerItems":{"--New--":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}, 
+                                                                                                                                 "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}}, 
+                                                                                                                      "__DEFAULT__":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":True, "setChecked":True}, 
+                                                                                                                                     "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}}}},
+                                                                             "self.isUploadTexChkBox":{"uiType":"checkbox",
+                                                                                                       "triggerItems":{True:{"self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}}, 
+                                                                                                                       False:{"self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}}}}},
+                                                      "MDL_HIGHSEC":{"Publish":{"self.pbVerSelComboBox":{"uiType":"combobox",
+                                                                                                         "triggerItems":{"--New--":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}, 
+                                                                                                                                    "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}, 
+                                                                                                                         "__DEFAULT__":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":True}, 
+                                                                                                                                        "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}}}}},
+                                                      "MDL_FAC":{"Publish":{"self.pbVerSelComboBox":{"uiType":"combobox",
+                                                                                                     "triggerItems":{"--New--":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}, 
+                                                                                                                                "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}, 
+                                                                                                                     "__DEFAULT__":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":True}, 
+                                                                                                                                    "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}}}}},
+                                                      "MDL_FACPRE":{"Publish":{"self.pbVerSelComboBox":{"uiType":"combobox",
+                                                                                                        "triggerItems":{"--New--":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}, 
+                                                                                                                                   "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}, 
+                                                                                                                        "__DEFAULT__":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":True}, 
+                                                                                                                                       "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}}}}},
+                                                      "MDL_HIGHPRI":{"Publish":{"self.pbVerSelComboBox":{"uiType":"combobox",
+                                                                                                         "triggerItems":{"--New--":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}, 
+                                                                                                                                    "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}, 
+                                                                                                                         "__DEFAULT__":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":True}, 
+                                                                                                                                        "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}}}}},
+                                                      "MDL_LOW":{"Publish":{"self.pbVerSelComboBox":{"uiType":"combobox",
+                                                                                                     "triggerItems":{"--New--":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":True}, 
+                                                                                                                                "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}, 
+                                                                                                                     "__DEFAULT__":{"self.isUploadTexChkBox":{"uiType":"checkbox", "setEnabled":True}, 
+                                                                                                                                    "self.isCreateTxChkBox":{"uiType":"checkbox", "setEnabled":False, "setChecked":False}}}}}}
+                                                     }
+                                         }'
+data:

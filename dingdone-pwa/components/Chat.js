@@ -16,20 +16,26 @@ const waveUrl = name => `./icons/waves/${name}.svg`;
 // Used when a video message leaves `src` / `poster` empty.
 const VIDEO_SRC = './img/chat.mov';
 const VIDEO_POSTER = './img/chat.png';
-const AUDIO_SRC = ['./audio/1.wav', './audio/2.wav', './audio/2.5.wav', './audio/3.wav'];
+const AUDIO_SRC = [
+  './audio/1_6x.wav',
+  './audio/2_6x.wav',
+  './audio/3_6x.wav',
+  './audio/4_6x.wav',
+  './audio/5_6x.wav',
+];
 const DEFAULTS = {
   title: '婁戴民 TM',
   messages: [
     { id: 'v1',  side: 'in',  type: 'audio', seconds: 13, time: '11:27 AM' },
     { id: 'v2',  side: 'out', type: 'audio', seconds: 27, time: '11:27 AM' },
     { id: 'v3',  side: 'in',  type: 'audio', seconds: 8,  time: '11:28 AM' },
-    { id: 'v4',  side: 'out', type: 'audio', seconds: 19, time: '11:20 AM' },
-    { id: 'v5',  side: 'in',  type: 'audio', seconds: 34, time: '11:23 AM' },
-    { id: 'v6',  side: 'out', type: 'audio', seconds: 11, time: '23:44 PM', src: AUDIO_SRC[0]},
-    { id: 'v7',  side: 'in',  type: 'audio', seconds: 22, time: '23:46 PM' },
-    { id: 'v8',  side: 'out', type: 'audio', seconds: 15,  time: '16:43 PM', src: AUDIO_SRC[1]  },
-    { id: 'v9',  side: 'in',  type: 'audio', seconds: 9, time: '11:20 AM', src: AUDIO_SRC[2]  },
-    { id: 'v10', side: 'out', type: 'audio', seconds: 15, time: '15:37 PM', src: AUDIO_SRC[3] },
+    { id: 'v4',  side: 'in',  type: 'audio', seconds: 8,  time: '11:20 AM' },
+    { id: 'v5',  side: 'out', type: 'audio', seconds: 9,  time: '11:23 AM', wave: 'soundwave-01', src: AUDIO_SRC[0] },
+    { id: 'v6',  side: 'in',  type: 'audio', seconds: 8,  time: '23:44 PM', wave: 'soundwave-02' },
+    { id: 'v7',  side: 'out', type: 'audio', seconds: 12, time: '23:46 PM', src: AUDIO_SRC[1] },
+    { id: 'v8',  side: 'out', type: 'audio', seconds: 4,  time: '16:43 PM', wave: 'soundwave-03', src: AUDIO_SRC[2] },
+    { id: 'v9',  side: 'in',  type: 'audio', seconds: 3,  time: '11:20 AM', wave: 'soundwave-04', src: AUDIO_SRC[3] },
+    { id: 'v10', side: 'out', type: 'audio', seconds: 5,  time: '15:37 PM', wave: 'soundwave-05', src: AUDIO_SRC[4] },
     { id: 'v11', side: 'out',  type: 'video', src: VIDEO_SRC, poster: VIDEO_POSTER, seconds: 8, time: '15:37 PM' },
   ],
 };
